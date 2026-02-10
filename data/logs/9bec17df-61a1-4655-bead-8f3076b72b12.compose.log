@@ -1,0 +1,114 @@
+[2026-02-10T20:50:46.946Z] Starting deployment...
+Cloning repository https://github.com/theaux42/sputnk-home...
+Repository cloned successfully.
+
+--- docker compose up --build ---
+time="2026-02-10T21:50:49+01:00" level=warning msg="/root/panel/data/compose/9bec17df-61a1-4655-bead-8f3076b72b12/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+ Image homelab-9bec17df-61a1-4655-bead-8f3076b72b12-app Building
+#1 [internal] load local bake definitions
+#1 reading from stdin 636B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 374B 0.0s done
+#2 DONE 0.2s
+
+#3 [internal] load metadata for docker.io/library/node:18-alpine
+#3 DONE 0.7s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.2s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [1/6] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+#6 resolve docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+#6 resolve docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e 0.3s done
+#6 DONE 0.4s
+
+#5 [internal] load build context
+#5 transferring context: 5.00MB 0.1s done
+#5 DONE 0.3s
+
+#7 [2/6] WORKDIR /app
+#7 CACHED
+
+#8 [3/6] COPY package*.json ./
+#8 CACHED
+
+#9 [4/6] RUN npm install
+#9 CACHED
+
+#10 [5/6] COPY . .
+#10 DONE 1.4s
+
+#11 [6/6] RUN npm run build
+#11 3.214 
+#11 3.214 > sputnk-home@0.1.0 build
+#11 3.214 > next build --turbopack
+#11 3.214
+#11 7.222 Attention: Next.js now collects completely anonymous telemetry regarding usage.
+#11 7.223 This information is used to shape Next.js' roadmap and prioritize features.
+#11 7.223 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+#11 7.223 https://nextjs.org/telemetry
+#11 7.223
+#11 7.425    ▲ Next.js 15.5.7 (Turbopack)
+#11 7.425
+#11 7.643    Creating an optimized production build ...
+#11 13.46  ⚠ Slow filesystem detected. The benchmark took 260ms. If /app/.next is a network drive, consider moving it to a local folder. If you have an antivirus enabled, consider excluding your project directory.
+#11 25.12  ✓ Finished writing to disk in 34ms
+#11 25.16  ✓ Compiled successfully in 16.7s
+#11 25.17    Linting and checking validity of types ...
+#11 25.33    Collecting page data ...
+#11 26.91    Generating static pages (0/6) ...
+#11 27.77    Generating static pages (1/6)
+#11 28.02    Generating static pages (2/6) 
+#11 28.02    Generating static pages (4/6)
+#11 28.02  ✓ Generating static pages (6/6)
+#11 28.39    Finalizing page optimization ...
+#11 28.39    Collecting build traces ...
+#11 36.04
+#11 36.05 Route (app)                         Size  First Load JS
+#11 36.05 ┌ ○ /                            39.6 kB         154 kB
+#11 36.05 ├ ○ /_not-found                      0 B         114 kB
+#11 36.05 └ ƒ /api/check-status                0 B            0 B
+#11 36.05 + First Load JS shared by all     121 kB
+#11 36.05   ├ chunks/3e0f93b37bf948e9.js   17.2 kB
+#11 36.05   ├ chunks/5f11500e67954124.js   59.2 kB
+#11 36.05   ├ chunks/a75771d769c2c47e.js   24.1 kB
+#11 36.05   └ other shared chunks (total)  20.2 kB
+#11 36.05 
+#11 36.05 
+#11 36.05 ○  (Static)   prerendered as static content
+#11 36.05 ƒ  (Dynamic)  server-rendered on demand
+#11 36.05
+#11 DONE 37.1s
+
+#12 exporting to image
+#12 exporting layers
+#12 exporting layers 2.4s done
+#12 exporting manifest sha256:d45441d5228a4c8467643a89433152de03560a7decc9f7303c6a481f879d4549
+#12 exporting manifest sha256:d45441d5228a4c8467643a89433152de03560a7decc9f7303c6a481f879d4549 0.2s done
+#12 exporting config sha256:027365e487c7aeb668005fa5e314415df638ac33a52a33df24bfa1fc8f530736
+#12 exporting config sha256:027365e487c7aeb668005fa5e314415df638ac33a52a33df24bfa1fc8f530736 0.2s done
+#12 exporting attestation manifest sha256:eb0cb38e25ade0162dfa311a2ad05f4211226d41c86841e478a23324f6ebfd40
+#12 exporting attestation manifest sha256:eb0cb38e25ade0162dfa311a2ad05f4211226d41c86841e478a23324f6ebfd40 0.4s done
+#12 exporting manifest list sha256:a462c959a762ac17143c90760c1c5aada0688f698d719f2049324dc498cdb746
+#12 exporting manifest list sha256:a462c959a762ac17143c90760c1c5aada0688f698d719f2049324dc498cdb746 0.3s done
+#12 naming to docker.io/library/homelab-9bec17df-61a1-4655-bead-8f3076b72b12-app:latest
+#12 naming to docker.io/library/homelab-9bec17df-61a1-4655-bead-8f3076b72b12-app:latest 0.0s done
+#12 unpacking to docker.io/library/homelab-9bec17df-61a1-4655-bead-8f3076b72b12-app:latest
+#12 unpacking to docker.io/library/homelab-9bec17df-61a1-4655-bead-8f3076b72b12-app:latest 2.3s done
+#12 DONE 6.1s
+
+#13 resolving provenance for metadata file
+#13 DONE 0.0s
+ Image homelab-9bec17df-61a1-4655-bead-8f3076b72b12-app Built
+network dokploy-network declared as external, but could not be found
+
+ERROR: docker compose up exited with code 1

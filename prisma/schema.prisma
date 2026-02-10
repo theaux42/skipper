@@ -1,0 +1,140 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// --- USER MANAGEMENT ---
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  name          String?
+  avatarUrl     String?
+  role          String    @default("USER") // Enum: OWNER, ADMIN, USER, VIEWER
+  createdAt     DateTime  @default(now())
+  
+  // Quotas
+  maxProjects   Int       @default(5)
+  maxRamUsage   Int       @default(2048) // MB
+  canExpose     Boolean   @default(false) // Can use Cloudflare Tunnels
+
+  projects      Project[]
+  @@map("users")
+}
+
+// --- ORGANIZATION ---
+model Project {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  ownerId     String
+  owner       User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  services    Service[]
+  
+  // Docker Compose
+  type        String    @default("STANDARD") // Enum: STANDARD, COMPOSE
+  composeContent String? // Content of docker-compose.yml
+  envContent     String? // For COMPOSE projects (.env file content)
+
+  // GitHub Integration
+  gitRepoUrl     String?
+  gitBranch      String?
+  gitComposePath String? @default("docker-compose.yml")
+  gitAuthId      String? // Future proofing
+
+  @@map("projects")
+}
+
+// --- SERVICES (APPS) ---
+model Service {
+  id              String        @id @default(uuid())
+  name            String
+  description     String?
+  status          String        @default("STOPPED") // Enum: RUNNING, STOPPED, BUILDING, DEPLOYING, ERROR, STARTING
+  containerId     String?       // Docker Container ID
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Deployment Strategy
+  sourceType      String        // Enum: IMAGE, GITHUB, COMPOSE_RAW
+  imageName       String?       // If IMAGE
+  gitRepoUrl      String?       // If GITHUB
+  gitBranch       String?       // If GITHUB
+  gitCommitSha    String?       // Last deployed commit
+  
+  gitDockerfilePath String? @default("Dockerfile")
+  gitContextPath    String? @default(".")
+
+  dockerfileUser  Boolean       @default(true)
+  composePath     String?       // For STANDARD projects (optional)
+  isComposeService Boolean      @default(false)
+  
+  // CI/CD Automation
+  webhookSecret   String?
+  githubWebhookId Int?
+
+  // Relations
+  projectId       String
+  project         Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  // Config
+  exposedUrls     ExposedUrl[]
+  envVariables    EnvVariable[]
+  volumes         Volume[]
+
+  @@unique([projectId, name])
+  @@map("services")
+}
+
+model SystemSetting {
+  key         String @id
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+  @@map("system_settings")
+}
+
+// --- NETWORKING (MULTI-INGRESS) ---
+model ExposedUrl {
+  id           String   @id @default(uuid())
+  subdomain    String   // e.g. "api"
+  domainSuffix String   // e.g. "mydomain.com"
+  fullUrl      String   // e.g. "api.mydomain.com"
+  internalPort Int      // e.g. 3000
+  
+  // Cloudflare IDs for Cleanup
+  tunnelId     String?  // Tunnel Ingress Rule ID
+  dnsRecordId  String?  // DNS CNAME Record ID
+
+  serviceId    String
+  service      Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  @@map("exposed_urls")
+}
+
+// --- CONFIG ---
+model EnvVariable {
+  id        String  @id @default(uuid())
+  key       String
+  value     String
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  @@map("env_variables")
+}
+
+model Volume {
+  id        String  @id @default(uuid())
+  hostPath  String
+  mountPath String
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  @@map("volumes")
+}
