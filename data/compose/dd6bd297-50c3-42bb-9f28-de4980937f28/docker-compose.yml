@@ -1,0 +1,23 @@
+version: "3"
+
+services:
+  chromium:
+    image: lscr.io/linuxserver/chromium:5f5dd27e-ls102
+    ports:
+      - "3000"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=UTC
+    volumes:
+      - config:/config
+    container_name: homelab-dd6bd297-50c3-42bb-9f28-de4980937f28-chromium
+    networks:
+      - homelab-panel-net
+      - default
+
+volumes:
+  config:
+networks:
+  homelab-panel-net:
+    external: true

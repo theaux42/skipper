@@ -46,19 +46,49 @@ export async function exposeService(formData: FormData) {
                 const zones = await cf.zones.list({ name: domainSuffix })
                 if (zones.result && zones.result.length > 0) {
                     const zoneId = zones.result[0].id
-                    const dnsRecord = await cf.dns.records.create({
+                    const fullRecordName = `${subdomain}.${domainSuffix}`
+                    const targetContent = `${tunnel.id}.cfargotunnel.com`
+
+                    // Check for existing record
+                    const existingRecords = await cf.dns.records.list({
                         zone_id: zoneId,
-                        type: 'CNAME',
-                        name: subdomain,
-                        content: `${tunnel.id}.cfargotunnel.com`,
-                        proxied: true,
-                        ttl: 1,
-                        comment: 'Homelab Panel Auto-created'
+                        name: { exact: fullRecordName },
+                        type: 'CNAME'
                     })
-                    dnsRecordId = dnsRecord.id || null
+
+                    if (existingRecords.result && existingRecords.result.length > 0) {
+                        const record = existingRecords.result[0]
+                        if (record.content !== targetContent) {
+                            // Update existing record
+                            console.log(`Updating existing DNS record for ${fullRecordName}`)
+                            await cf.dns.records.edit(record.id, {
+                                zone_id: zoneId,
+                                type: 'CNAME',
+                                name: subdomain,
+                                content: targetContent,
+                                proxied: true,
+                                ttl: 1,
+                                comment: 'Homelab Panel Auto-updated'
+                            })
+                        }
+                        dnsRecordId = record.id
+                    } else {
+                        // Create new record
+                        console.log(`Creating new DNS record for ${fullRecordName}`)
+                        const dnsRecord = await cf.dns.records.create({
+                            zone_id: zoneId,
+                            type: 'CNAME',
+                            name: subdomain,
+                            content: targetContent,
+                            proxied: true,
+                            ttl: 1,
+                            comment: 'Homelab Panel Auto-created'
+                        })
+                        dnsRecordId = dnsRecord.id || null
+                    }
                 }
             } catch (e: any) {
-                console.error('DNS record creation failed:', e)
+                console.error('DNS record operation failed:', e)
             }
         }
 

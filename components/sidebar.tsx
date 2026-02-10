@@ -5,11 +5,12 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { LayoutDashboard, Settings, LogOut, Box, Globe, Activity, Container, ChevronLeft, ChevronRight } from 'lucide-react'
+import { LayoutDashboard, Settings, LogOut, Box, Globe, Activity, Container, ChevronLeft, ChevronRight, LayoutGrid } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Templates', href: '/templates', icon: LayoutGrid },
     { name: 'Status', href: '/status', icon: Activity },
     { name: 'Containers', href: '/containers', icon: Container },
     { name: 'Domains', href: '/domains', icon: Globe },

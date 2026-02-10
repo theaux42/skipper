@@ -1,0 +1,14 @@
+[2026-02-10T23:15:14.635Z] Starting deployment...
+
+--- docker compose up --build ---
+time="2026-02-11T00:15:14+01:00" level=warning msg="/root/panel/data/compose/7d418d45-bf89-4003-b919-e821468fc8e2/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+ Network homelab-7d418d45-bf89-4003-b919-e821468fc8e2_default Creating
+ Network homelab-7d418d45-bf89-4003-b919-e821468fc8e2_default Created
+ Volume homelab-7d418d45-bf89-4003-b919-e821468fc8e2_config Creating
+ Volume homelab-7d418d45-bf89-4003-b919-e821468fc8e2_config Created
+ Container homelab-7d418d45-bf89-4003-b919-e821468fc8e2-chromium Creating
+ Container homelab-7d418d45-bf89-4003-b919-e821468fc8e2-chromium Created
+ Container homelab-7d418d45-bf89-4003-b919-e821468fc8e2-chromium Starting
+ Container homelab-7d418d45-bf89-4003-b919-e821468fc8e2-chromium Started
+
+[2026-02-10T23:15:17.919Z] Deployment completed successfully.

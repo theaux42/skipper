@@ -1,0 +1,19 @@
+version: "3.8"
+services:
+  alltube:
+    image: dnomd343/alltube:latest
+    restart: unless-stopped
+    ports:
+      - 80
+    environment:
+      - TITLE=${TITLE}
+      - CONVERT=${CONVERT}
+      - STREAM=${STREAM}
+      - REMUX=${REMUX}
+    container_name: homelab-a89f21a1-cb95-4359-a9e0-bbb008081cd6-alltube
+    networks:
+      - homelab-panel-net
+      - default
+networks:
+  homelab-panel-net:
+    external: true
