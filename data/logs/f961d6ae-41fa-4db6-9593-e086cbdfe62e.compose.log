@@ -1,7 +1,0 @@
-[2026-02-10T22:35:02.942Z] Starting rebuild...
-
---- docker compose up --build ---
-time="2026-02-10T23:35:03+01:00" level=warning msg="/root/panel/data/compose/f961d6ae-41fa-4db6-9593-e086cbdfe62e/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
- Container homelab-f961d6ae-41fa-4db6-9593-e086cbdfe62e-alltube-1 Running
-
-[2026-02-10T22:35:03.333Z] Rebuild completed successfully.
