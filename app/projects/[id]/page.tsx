@@ -15,11 +15,18 @@ import { ExposeServiceForm } from '@/components/expose-form'
 import { ComposeLogs } from '@/components/compose-logs'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ProjectPage({
+    params,
+    searchParams
+}: {
+    params: Promise<{ id: string }>
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
     const session = await getSession()
     if (!session) redirect('/login')
 
     const { id } = await params
+    const { tab } = await searchParams
 
     const project = await db.project.findUnique({
         where: { id },
@@ -62,7 +69,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
             </div>
 
             {isCompose ? (
-                <Tabs defaultValue="services" className="space-y-6">
+                <Tabs defaultValue={(tab as string) || "services"} className="space-y-6">
                     <TabsList>
                         <TabsTrigger value="services">Services</TabsTrigger>
                         <TabsTrigger value="logs">Logs</TabsTrigger>

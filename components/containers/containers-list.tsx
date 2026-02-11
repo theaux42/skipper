@@ -11,6 +11,7 @@ import { serviceAction } from '@/lib/actions/service-actions'
 import { bulkContainerAction, rebuildService } from '@/lib/actions/container-actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 
 interface ServiceData {
     id: string
@@ -29,6 +30,7 @@ export function ContainersList({ services }: { services: ServiceData[] }) {
     const [selected, setSelected] = useState<Set<string>>(new Set())
     const [loading, setLoading] = useState<string | null>(null)
     const [bulkLoading, setBulkLoading] = useState(false)
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
     const router = useRouter()
 
     const selectionMode = selected.size > 0
@@ -75,12 +77,28 @@ export function ContainersList({ services }: { services: ServiceData[] }) {
     }
 
     async function handleBulkAction(action: 'start' | 'stop' | 'delete') {
-        if (action === 'delete' && !confirm(`Delete ${selected.size} service(s)? This cannot be undone.`)) return
+        if (action === 'delete') {
+            setDeleteDialogOpen(true)
+            return
+        }
         setBulkLoading(true)
         try {
             const res = await bulkContainerAction(Array.from(selected), action)
             if (res.success) {
-                toast.success(`${res.affected} service(s) ${action === 'delete' ? 'deleted' : action + 'ed'}`)
+                toast.success(`${res.affected} service(s) ${action}ed`)
+                setSelected(new Set())
+                router.refresh()
+            }
+        } catch { toast.error('Bulk action failed') }
+        finally { setBulkLoading(false) }
+    }
+
+    async function handleBulkDelete() {
+        setBulkLoading(true)
+        try {
+            const res = await bulkContainerAction(Array.from(selected), 'delete')
+            if (res.success) {
+                toast.success(`${res.affected} service(s) deleted`)
                 setSelected(new Set())
                 router.refresh()
             }
@@ -214,6 +232,16 @@ export function ContainersList({ services }: { services: ServiceData[] }) {
                     </table>
                 </div>
             </CardContent>
+
+            <DeleteConfirmationDialog
+                open={deleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+                onConfirm={handleBulkDelete}
+                itemName={`${selected.size} service(s)`}
+                itemType="services"
+                description={`This will permanently delete ${selected.size} service(s). This action cannot be undone.`}
+                requireExactMatch={false}
+            />
         </Card>
     )
 }

@@ -10,6 +10,7 @@ import { Trash2, Play, Square, Layout } from 'lucide-react'
 import { deleteProject, toggleProjectServices } from '@/lib/actions/project-actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 
 interface ProjectData {
     id: string
@@ -22,6 +23,7 @@ interface ProjectData {
 export function ProjectGrid({ projects }: { projects: ProjectData[] }) {
     const [selected, setSelected] = useState<Set<string>>(new Set())
     const [bulkLoading, setBulkLoading] = useState(false)
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
     const router = useRouter()
 
     function toggleSelect(id: string) {
@@ -34,7 +36,6 @@ export function ProjectGrid({ projects }: { projects: ProjectData[] }) {
     }
 
     async function handleBulkDelete() {
-        if (!confirm(`Delete ${selected.size} project(s) and all their services?`)) return
         setBulkLoading(true)
         let count = 0
         for (const id of selected) {
@@ -78,7 +79,7 @@ export function ProjectGrid({ projects }: { projects: ProjectData[] }) {
                             className="h-8 text-amber-400 border-amber-800 hover:bg-amber-900/30">
                             <Square className="w-3 h-3 mr-1" /> Stop All
                         </Button>
-                        <Button size="sm" variant="outline" onClick={handleBulkDelete} disabled={bulkLoading}
+                        <Button size="sm" variant="outline" onClick={() => setDeleteDialogOpen(true)} disabled={bulkLoading}
                             className="h-8 text-red-400 border-red-800 hover:bg-red-900/30">
                             <Trash2 className="w-3 h-3 mr-1" /> Delete
                         </Button>
@@ -114,6 +115,16 @@ export function ProjectGrid({ projects }: { projects: ProjectData[] }) {
                     </Card>
                 )}
             </div>
+
+            <DeleteConfirmationDialog
+                open={deleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+                onConfirm={handleBulkDelete}
+                itemName={`${selected.size} project(s)`}
+                itemType="projects"
+                description={`This will permanently delete ${selected.size} project(s) and all their services. This action cannot be undone.`}
+                requireExactMatch={false}
+            />
         </>
     )
 }

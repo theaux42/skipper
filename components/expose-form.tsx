@@ -8,9 +8,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Loader2, Globe, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 
 export function ExposeServiceForm({ service }: { service: any }) {
     const [loading, setLoading] = useState(false)
+    const [deleteUrlId, setDeleteUrlId] = useState<string | null>(null)
+    const [deleteUrl, setDeleteUrl] = useState<string>('')
 
     const handleExpose = async (formData: FormData) => {
         setLoading(true)
@@ -29,11 +32,11 @@ export function ExposeServiceForm({ service }: { service: any }) {
         }
     }
 
-    const handleUnexpose = async (id: string) => {
-        if (!confirm('Remove this public URL?')) return
+    const handleUnexpose = async () => {
+        if (!deleteUrlId) return
         setLoading(true)
         try {
-            const result = await unexposeService(id)
+            const result = await unexposeService(deleteUrlId)
             if (result.success) {
                 toast.success('URL removed')
             } else {
@@ -61,7 +64,13 @@ export function ExposeServiceForm({ service }: { service: any }) {
                                 <a href={`https://${url.fullUrl}`} target="_blank" className="text-blue-400 hover:underline text-sm">
                                     https://{url.fullUrl}
                                 </a>
-                                <Button variant="ghost" size="sm" onClick={() => handleUnexpose(url.id)} disabled={loading}>
+                                <Button variant="ghost" size="sm"
+                                    onClick={() => {
+                                        setDeleteUrlId(url.id)
+                                        setDeleteUrl(url.fullUrl)
+                                        setLoading(false) // Ensure we can open dialog
+                                    }}
+                                    disabled={loading}>
                                     <Trash2 className="w-4 h-4 text-zinc-500 hover:text-red-400" />
                                 </Button>
                             </div>
@@ -96,6 +105,16 @@ export function ExposeServiceForm({ service }: { service: any }) {
                     </div>
                 </form>
             </div>
+
+            <DeleteConfirmationDialog
+                open={deleteUrlId !== null}
+                onOpenChange={(open) => !open && setDeleteUrlId(null)}
+                onConfirm={handleUnexpose}
+                itemName={deleteUrl}
+                itemType="public URL"
+                description="This will remove the public URL and delete the DNS record. This action cannot be undone."
+                requireExactMatch={false}
+            />
         </div>
     )
 }

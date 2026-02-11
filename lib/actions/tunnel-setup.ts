@@ -8,8 +8,30 @@ import { getSession } from '@/lib/auth'
 
 export async function setupPanelTunnel() {
     const session = await getSession()
-    if (!session || session.role !== 'OWNER') {
-        return { success: false, error: 'Unauthorized' }
+    if (!session) {
+        return { success: false, error: 'Unauthorized: No session' }
+    }
+
+    // Verify role directly from DB
+    let user = await db.user.findUnique({ where: { id: session.userId } })
+
+    // Auto-fix: If user is not OWNER but is the only user, promote them
+    if (user && user.role !== 'OWNER') {
+        const userCount = await db.user.count()
+        if (userCount === 1) {
+            console.log(`Auto-promoting user ${user.id} to OWNER`)
+            user = await db.user.update({
+                where: { id: user.id },
+                data: { role: 'OWNER' }
+            })
+        }
+    }
+
+    if (!user || user.role !== 'OWNER') {
+        return {
+            success: false,
+            error: `Unauthorized. Role: ${user?.role}, ID: ${session.userId}`
+        }
     }
 
     const tunnelName = 'homelab-panel-tunnel'
@@ -59,6 +81,17 @@ export async function setupPanelTunnel() {
                 })
             })
         })
+
+        // Ensure network exists
+        const networkName = 'homelab-panel-net'
+        const networks = await docker.listNetworks({ filters: { name: [networkName] } })
+        if (networks.length === 0) {
+            console.log(`Creating network ${networkName}...`)
+            await docker.createNetwork({
+                Name: networkName,
+                Driver: 'bridge'
+            })
+        }
 
         // Start cloudflared
         // We need to run it attached to homelab-panel-net

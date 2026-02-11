@@ -1,13 +1,11 @@
-
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { jwtVerify } from 'jose'
-
-const SECRET_KEY = process.env.JWT_SECRET_KEY || 'default-secret-key-change-me'
-const key = new TextEncoder().encode(SECRET_KEY)
 
 export async function middleware(request: NextRequest) {
-    const session = request.cookies.get('session')?.value
+    const sessionCookie = request.cookies.get('better-auth.session_token') || request.cookies.get('session_token');
+
+    // console.log("Middleware Path:", request.nextUrl.pathname);
+    // console.log("Session Cookie:", sessionCookie ? "Present" : "Missing");
 
     // Public paths
     if (request.nextUrl.pathname.startsWith('/login') ||
@@ -18,16 +16,11 @@ export async function middleware(request: NextRequest) {
         return NextResponse.next()
     }
 
-    if (!session) {
+    if (!sessionCookie) {
         return NextResponse.redirect(new URL('/login', request.url))
     }
 
-    try {
-        await jwtVerify(session, key, { algorithms: ['HS256'] })
-        return NextResponse.next()
-    } catch (error) {
-        return NextResponse.redirect(new URL('/login', request.url))
-    }
+    return NextResponse.next()
 }
 
 export const config = {

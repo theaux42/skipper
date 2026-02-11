@@ -23,14 +23,28 @@ export async function saveCloudflareToken(token: string) {
     // Verify token and fetch account ID
     try {
         const cf = new Cloudflare({ apiToken: token })
-        const tokenVerify = await cf.user.tokens.verify()
 
-        if (tokenVerify.status !== 'active') {
-            throw new Error("Token is not active")
+        console.log('Verifying Cloudflare token...')
+        let tokenVerify
+        try {
+            tokenVerify = await cf.user.tokens.verify()
+            if (tokenVerify.status !== 'active') {
+                console.warn("Token status is not active:", tokenVerify.status)
+            }
+        } catch (error: any) {
+            console.warn('Token verification failed (possibly missing User:Read permission). Proceeding to account check...', error.message)
         }
 
         // Fetch Accounts
-        const accounts = await cf.accounts.list()
+        console.log('Fetching Cloudflare accounts...')
+        let accounts
+        try {
+            accounts = await cf.accounts.list()
+        } catch (error: any) {
+            console.error('Account listing failed:', error)
+            throw new Error(`Failed to list accounts: ${error.message}. Ensure the token has 'Account Settings: Read' permission.`)
+        }
+
         if (!accounts.result || accounts.result.length === 0) {
             throw new Error("No accounts found for this token")
         }

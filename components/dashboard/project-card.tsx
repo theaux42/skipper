@@ -11,6 +11,7 @@ import { Layout, MoreVertical, Pencil, Trash2, Play, Square, Check, X, Loader2 }
 import { renameProject, deleteProject, toggleProjectServices } from '@/lib/actions/project-actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 
 interface ProjectData {
     id: string
@@ -29,6 +30,7 @@ export function ProjectCard({ project, selected, onSelect }: {
     const [renaming, setRenaming] = useState(false)
     const [newName, setNewName] = useState(project.name)
     const [loading, setLoading] = useState(false)
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
     const router = useRouter()
 
     async function handleRename() {
@@ -46,7 +48,6 @@ export function ProjectCard({ project, selected, onSelect }: {
     }
 
     async function handleDelete() {
-        if (!confirm(`Delete "${project.name}" and all its services?`)) return
         setLoading(true)
         try {
             const res = await deleteProject(project.id)
@@ -108,7 +109,7 @@ export function ProjectCard({ project, selected, onSelect }: {
                                 </button>
                                 <div className="border-t border-zinc-800 my-1" />
                                 <button className="w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-zinc-800 flex items-center gap-2"
-                                    onClick={(e) => { e.preventDefault(); handleDelete(); setMenuOpen(false) }} disabled={loading}>
+                                    onClick={(e) => { e.preventDefault(); setDeleteDialogOpen(true); setMenuOpen(false) }} disabled={loading}>
                                     <Trash2 className="w-3.5 h-3.5" /> Delete
                                 </button>
                             </div>
@@ -156,9 +157,18 @@ export function ProjectCard({ project, selected, onSelect }: {
                     </div>
                 </CardContent>
                 <CardFooter className="text-xs text-zinc-500 border-t border-zinc-900/50 pt-4 mt-auto">
-                    Last updated {new Date(project.updatedAt).toLocaleDateString()}
+                    Last updated <span suppressHydrationWarning>{new Date(project.updatedAt).toLocaleDateString()}</span>
                 </CardFooter>
             </Link>
+
+            <DeleteConfirmationDialog
+                open={deleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+                onConfirm={handleDelete}
+                itemName={project.name}
+                itemType="project"
+                description="This will permanently delete the project and all its services. This action cannot be undone."
+            />
         </Card>
     )
 }

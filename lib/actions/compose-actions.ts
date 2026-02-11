@@ -9,6 +9,8 @@ import { exec, spawn } from 'child_process'
 import util from 'util'
 import { parseComposeFile } from '@/lib/compose-parser'
 import simpleGit from 'simple-git'
+import { injectNetworkConfig } from '@/lib/template-engine'
+import { docker } from '@/lib/docker'
 
 const execAsync = util.promisify(exec)
 
@@ -20,6 +22,23 @@ async function ensureDataDir() {
         await fs.mkdir(DATA_DIR, { recursive: true })
         await fs.mkdir(LOG_DIR, { recursive: true })
     } catch { }
+}
+
+/** Ensure the shared Docker network exists */
+async function ensureNetwork() {
+    try {
+        await docker.getNetwork('homelab-panel-net').inspect()
+    } catch {
+        try {
+            await docker.createNetwork({ Name: 'homelab-panel-net', Driver: 'bridge' })
+            console.log('[Network] Created homelab-panel-net network')
+        } catch (e: any) {
+            // May already exist due to race condition, that's fine
+            if (!e.message?.includes('already exists')) {
+                console.error('[Network] Failed to create homelab-panel-net:', e.message)
+            }
+        }
+    }
 }
 
 async function appendDeployLog(projectId: string, message: string) {
@@ -167,13 +186,28 @@ export async function deployComposeProject(projectId: string, composeContent: st
                 composeContent = cloneResult.composeContent
             }
         } else {
-            // No git repo — write compose file + .env directly
+            // No git repo — write compose file + .env directly (network injection happens below)
             await fs.writeFile(path.join(projectDir, 'docker-compose.yml'), composeContent)
             await fs.writeFile(path.join(projectDir, '.env'), envContent || '')
         }
 
         // Determine the working directory for docker compose
         const workDir = getComposeWorkDir(projectDir, project?.gitComposePath)
+
+        // Inject network isolation for all compose projects
+        const finalContent = injectNetworkConfig(composeContent, projectId)
+
+        // Write the network-injected content
+        if (!project?.gitRepoUrl) {
+            await fs.writeFile(path.join(projectDir, 'docker-compose.yml'), finalContent)
+        } else {
+            // For git repos, overwrite the compose file with injected content
+            const composePath = path.join(projectDir, project.gitComposePath || 'docker-compose.yml')
+            await fs.writeFile(composePath, finalContent)
+        }
+
+        // Ensure the shared network exists
+        await ensureNetwork()
 
         // Run docker compose up and stream output to log
         await appendDeployLog(projectId, '\n--- docker compose up --build ---')
@@ -184,7 +218,8 @@ export async function deployComposeProject(projectId: string, composeContent: st
         )
 
         if (result.code !== 0) {
-            throw new Error(`docker compose up exited with code ${result.code}`)
+            const errorLog = result.output.length > 500 ? result.output.slice(-500) : result.output
+            throw new Error(`docker compose up exited with code ${result.code}. Log: ${errorLog}`)
         }
 
         // Sync services with DB
@@ -306,6 +341,21 @@ export async function composeRebuild(projectId: string) {
         }
 
         await appendDeployLog(projectId, '\n--- docker compose up --build ---')
+
+        // Inject network isolation
+        let composeContent = project.composeContent
+        if (composeContent) {
+            const finalContent = injectNetworkConfig(composeContent, projectId)
+            const composePath = path.join(
+                path.join(DATA_DIR, projectId),
+                project.gitComposePath || 'docker-compose.yml'
+            )
+            await fs.writeFile(composePath, finalContent)
+        }
+
+        // Ensure the shared network exists
+        await ensureNetwork()
+
         const result = await execWithLogs(
             `docker compose -p "homelab-${projectId}" up -d --build --remove-orphans 2>&1`,
             workDir,
@@ -313,7 +363,8 @@ export async function composeRebuild(projectId: string) {
         )
 
         if (result.code !== 0) {
-            throw new Error(`docker compose up exited with code ${result.code}`)
+            const errorLog = result.output.length > 500 ? result.output.slice(-500) : result.output
+            throw new Error(`docker compose up exited with code ${result.code}. Log: ${errorLog}`)
         }
 
         // Refresh container IDs

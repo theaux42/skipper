@@ -3,12 +3,16 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Play, Square, RotateCcw, Hammer, Trash2, Loader2 } from 'lucide-react'
+import { Play, Square, RotateCcw, Hammer, Trash2, Loader2, Rocket } from 'lucide-react'
 import { toast } from 'sonner'
 import { composeStart, composeStop, composeRestart, composeRebuild, composeDown } from '@/lib/actions/compose-actions'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { useRouter } from 'next/navigation'
 
 export function ComposeStackControls({ projectId, hasServices = false }: { projectId: string; hasServices?: boolean }) {
     const [loading, setLoading] = useState<string | null>(null)
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+    const router = useRouter()
 
     const run = async (action: string, fn: (id: string) => Promise<{ success: boolean; error?: string }>) => {
         setLoading(action)
@@ -16,6 +20,7 @@ export function ComposeStackControls({ projectId, hasServices = false }: { proje
             const res = await fn(projectId)
             if (res.success) {
                 toast.success(`Stack ${action} successful`)
+                router.refresh()
             } else {
                 toast.error(res.error || `Stack ${action} failed`)
             }
@@ -30,9 +35,15 @@ export function ComposeStackControls({ projectId, hasServices = false }: { proje
 
     if (!hasServices) {
         return (
-            <div className="text-sm text-muted-foreground italic">
-                Deploy the stack first (Configuration tab)
-            </div>
+            <Button
+                size="sm"
+                onClick={() => run('deploy', composeRebuild)}
+                disabled={isLoading}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+                {loading === 'deploy' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Rocket className="mr-2 h-4 w-4" />}
+                Deploy Stack
+            </Button>
         )
     }
 
@@ -77,16 +88,22 @@ export function ComposeStackControls({ projectId, hasServices = false }: { proje
             <Button
                 variant="destructive"
                 size="sm"
-                onClick={() => {
-                    if (confirm('This will stop and remove all containers in the stack. Continue?')) {
-                        run('down', composeDown)
-                    }
-                }}
+                onClick={() => setDeleteDialogOpen(true)}
                 disabled={isLoading}
             >
                 {loading === 'down' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
                 Down
             </Button>
+
+            <DeleteConfirmationDialog
+                open={deleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+                onConfirm={() => run('down', composeDown)}
+                itemName="stack"
+                itemType="compose stack"
+                description="This will stop and remove all containers in the stack. This action cannot be undone."
+                requireExactMatch={false}
+            />
         </div>
     )
 }

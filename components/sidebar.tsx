@@ -1,12 +1,12 @@
-
 'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { LayoutDashboard, Settings, LogOut, Box, Globe, Activity, Container, ChevronLeft, ChevronRight, LayoutGrid } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { authClient } from '@/lib/auth-client'
 
 const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -18,8 +18,19 @@ const navItems = [
 ]
 
 export function Sidebar() {
+    const router = useRouter()
     const pathname = usePathname()
     const [isCollapsed, setIsCollapsed] = useState(false)
+
+    const handleLogout = async () => {
+        await authClient.signOut({
+            fetchOptions: {
+                onSuccess: () => {
+                    router.push("/login"); // Redirect to login page
+                }
+            }
+        });
+    }
 
     return (
         <div className={cn(
@@ -57,23 +68,26 @@ export function Sidebar() {
             </div>
             <div className={cn("border-t border-zinc-800")}>
                 <div className={cn("p-6", isCollapsed && "p-3")}>
-                    <form action="/api/auth/logout" method="POST">
-                        {isCollapsed ? (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="w-full text-zinc-400 hover:text-white hover:bg-zinc-800/50"
-                                title="Logout"
-                            >
-                                <LogOut className="h-4 w-4" />
-                            </Button>
-                        ) : (
-                            <Button variant="ghost" className="w-full justify-start text-zinc-400 hover:text-white hover:bg-zinc-800/50 pl-3">
-                                <LogOut className="h-4 w-4 mr-3" />
-                                Logout
-                            </Button>
-                        )}
-                    </form>
+                    {isCollapsed ? (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="w-full text-zinc-400 hover:text-white hover:bg-zinc-800/50"
+                            onClick={handleLogout}
+                            title="Logout"
+                        >
+                            <LogOut className="h-4 w-4" />
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="ghost"
+                            className="w-full justify-start text-zinc-400 hover:text-white hover:bg-zinc-800/50 pl-3"
+                            onClick={handleLogout}
+                        >
+                            <LogOut className="h-4 w-4 mr-3" />
+                            Logout
+                        </Button>
+                    )}
                 </div>
                 <div className={cn("p-3 border-t border-zinc-800")}>
                     <Button

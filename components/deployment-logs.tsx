@@ -1,15 +1,24 @@
 
 'use client'
 
+import { useRef, useEffect } from 'react'
 import useSWR from 'swr'
 import { Loader2 } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export function DeploymentLogs({ serviceId }: { serviceId: string }) {
+    const scrollRef = useRef<HTMLDivElement>(null)
     const { data, error, isLoading } = useSWR(`/api/services/${serviceId}/logs?type=build`, fetcher, {
         refreshInterval: 3000
     })
+
+    // Auto-scroll to bottom when logs update
+    useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+        }
+    }, [data])
 
     if (error) return <div className="text-red-500 p-4">Failed to load deployment logs</div>
     if (isLoading && !data) return <div className="flex justify-center p-10"><Loader2 className="animate-spin" /></div>
@@ -17,7 +26,7 @@ export function DeploymentLogs({ serviceId }: { serviceId: string }) {
     const logs = data?.logs || ''
 
     return (
-        <div className="bg-zinc-950 text-amber-300/80 font-mono text-xs p-4 rounded-md h-[400px] overflow-auto whitespace-pre-wrap leading-5">
+        <div ref={scrollRef} className="bg-zinc-950 text-amber-300/80 font-mono text-xs p-4 rounded-md h-[400px] overflow-auto whitespace-pre-wrap leading-5">
             {logs ? (
                 logs.split('\n').map((line: string, i: number) => {
                     // Color code different types of lines

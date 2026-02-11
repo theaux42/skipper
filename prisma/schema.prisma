@@ -9,39 +9,44 @@ datasource db {
 }
 
 // --- USER MANAGEMENT ---
+
 model User {
   id            String    @id @default(uuid())
   email         String    @unique
-  passwordHash  String
   name          String?
-  avatarUrl     String?
-  role          String    @default("USER") // Enum: OWNER, ADMIN, USER, VIEWER
+  emailVerified Boolean   @default(false)
+  image         String?
   createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
   
-  // Quotas
+  // Custom fields
+  role          String    @default("USER") // Enum: OWNER, ADMIN, USER, VIEWER
+  // Quotas & Settings
   maxProjects   Int       @default(5)
   maxRamUsage   Int       @default(2048) // MB
-  canExpose     Boolean   @default(false) // Can use Cloudflare Tunnels
+  canExpose     Boolean   @default(false)
 
   projects      Project[]
-  @@map("users")
+  sessions      Session[]
+  accounts      Account[]
+
+  @@map("user")
 }
 
 // --- ORGANIZATION ---
+
 model Project {
-  id          String    @id @default(uuid())
+  id          String   @id @default(uuid())
   name        String
   description String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   ownerId     String
-  owner       User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
-  services    Service[]
-  
+  services       Service[]
   // Docker Compose
-  type        String    @default("STANDARD") // Enum: STANDARD, COMPOSE
+  type           String    @default("STANDARD") // Enum: STANDARD, COMPOSE
   composeContent String? // Content of docker-compose.yml
   envContent     String? // For COMPOSE projects (.env file content)
 
@@ -55,78 +60,80 @@ model Project {
 }
 
 // --- SERVICES (APPS) ---
+
 model Service {
-  id              String        @id @default(uuid())
-  name            String
-  description     String?
-  status          String        @default("STOPPED") // Enum: RUNNING, STOPPED, BUILDING, DEPLOYING, ERROR, STARTING
-  containerId     String?       // Docker Container ID
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  status      String   @default("STOPPED") // Enum: RUNNING, STOPPED, BUILDING, DEPLOYING, ERROR, STARTING
+  containerId String? // Docker Container ID
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Deployment Strategy
-  sourceType      String        // Enum: IMAGE, GITHUB, COMPOSE_RAW
-  imageName       String?       // If IMAGE
-  gitRepoUrl      String?       // If GITHUB
-  gitBranch       String?       // If GITHUB
-  gitCommitSha    String?       // Last deployed commit
-  
+  sourceType        String // Enum: IMAGE, GITHUB, COMPOSE_RAW
+  imageName         String? // If IMAGE
+  gitRepoUrl        String? // If GITHUB
+  gitBranch         String? // If GITHUB
+  gitCommitSha      String? // Last deployed commit
   gitDockerfilePath String? @default("Dockerfile")
   gitContextPath    String? @default(".")
 
-  dockerfileUser  Boolean       @default(true)
-  composePath     String?       // For STANDARD projects (optional)
-  isComposeService Boolean      @default(false)
-  
+  dockerfileUser   Boolean @default(true)
+  composePath      String? // For STANDARD projects (optional)
+  isComposeService Boolean @default(false)
   // CI/CD Automation
-  webhookSecret   String?
-  githubWebhookId Int?
+  webhookSecret    String?
+  githubWebhookId  Int?
 
   // Relations
-  projectId       String
-  project         Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  
+  projectId    String
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   // Config
-  exposedUrls     ExposedUrl[]
-  envVariables    EnvVariable[]
-  volumes         Volume[]
+  exposedUrls  ExposedUrl[]
+  envVariables EnvVariable[]
+  volumes      Volume[]
 
   @@unique([projectId, name])
   @@map("services")
 }
 
 model SystemSetting {
-  key         String @id
+  key         String   @id
   value       String
   description String?
   updatedAt   DateTime @updatedAt
+
   @@map("system_settings")
 }
 
 // --- NETWORKING (MULTI-INGRESS) ---
-model ExposedUrl {
-  id           String   @id @default(uuid())
-  subdomain    String   // e.g. "api"
-  domainSuffix String   // e.g. "mydomain.com"
-  fullUrl      String   // e.g. "api.mydomain.com"
-  internalPort Int      // e.g. 3000
-  
-  // Cloudflare IDs for Cleanup
-  tunnelId     String?  // Tunnel Ingress Rule ID
-  dnsRecordId  String?  // DNS CNAME Record ID
 
-  serviceId    String
-  service      Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+model ExposedUrl {
+  id           String  @id @default(uuid())
+  subdomain    String // e.g. "api"
+  domainSuffix String // e.g. "mydomain.com"
+  fullUrl      String // e.g. "api.mydomain.com"
+  internalPort Int // e.g. 3000
+  // Cloudflare IDs for Cleanup
+  tunnelId     String? // Tunnel Ingress Rule ID
+  dnsRecordId  String? // DNS CNAME Record ID
+
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
   @@map("exposed_urls")
 }
 
 // --- CONFIG ---
+
 model EnvVariable {
   id        String  @id @default(uuid())
   key       String
   value     String
   serviceId String
   service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
   @@map("env_variables")
 }
 
@@ -136,5 +143,50 @@ model Volume {
   mountPath String
   serviceId String
   service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
   @@map("volumes")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(uuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verification")
 }

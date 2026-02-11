@@ -397,8 +397,11 @@ export function injectNetworkConfig(composeContent: string, projectId: string): 
                 service.set('networks', [])
             }
 
-            // service.get('networks') returns a JS object/array, not a YAML node
-            const currentNetworks = service.get('networks')
+            // service.get('networks') might return a YAML Node
+            let currentNetworks = service.get('networks')
+            if (currentNetworks && typeof currentNetworks.toJSON === 'function') {
+                currentNetworks = currentNetworks.toJSON()
+            }
 
             if (Array.isArray(currentNetworks)) {
                 const newNetworks = [...currentNetworks]

@@ -12,6 +12,7 @@ import { ExternalLink, Trash2, Box, Globe, Plus, Loader2, X } from 'lucide-react
 import { unexposeService, addCustomDomain } from '@/lib/actions/expose-actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 
 interface DomainEntry {
     id: string
@@ -39,6 +40,8 @@ export function DomainsTable({ domains, services }: { domains: DomainEntry[]; se
     const [loading, setLoading] = useState<string | null>(null)
     const [showAddForm, setShowAddForm] = useState(false)
     const [addLoading, setAddLoading] = useState(false)
+    const [deleteDomainId, setDeleteDomainId] = useState<string | null>(null)
+    const [deleteDomainUrl, setDeleteDomainUrl] = useState<string>('')
     const [formData, setFormData] = useState({
         hostname: '',
         protocol: 'https',
@@ -48,11 +51,11 @@ export function DomainsTable({ domains, services }: { domains: DomainEntry[]; se
     })
     const router = useRouter()
 
-    async function handleDelete(id: string) {
-        if (!confirm('Remove this domain binding? This will delete the DNS record.')) return
-        setLoading(id)
+    async function handleDelete() {
+        if (!deleteDomainId) return
+        setLoading(deleteDomainId)
         try {
-            const res = await unexposeService(id)
+            const res = await unexposeService(deleteDomainId)
             if (res.success) {
                 toast.success('Domain removed')
                 router.refresh()
@@ -254,7 +257,10 @@ export function DomainsTable({ domains, services }: { domains: DomainEntry[]; se
                                                         variant="ghost"
                                                         size="icon"
                                                         className="h-8 w-8 text-red-400 hover:text-red-300"
-                                                        onClick={() => handleDelete(d.id)}
+                                                        onClick={() => {
+                                                            setDeleteDomainId(d.id)
+                                                            setDeleteDomainUrl(d.fullUrl)
+                                                        }}
                                                         disabled={loading === d.id}
                                                     >
                                                         <Trash2 className="w-4 h-4" />
@@ -269,6 +275,16 @@ export function DomainsTable({ domains, services }: { domains: DomainEntry[]; se
                     </div>
                 </CardContent>
             </Card>
+
+            <DeleteConfirmationDialog
+                open={deleteDomainId !== null}
+                onOpenChange={(open) => !open && setDeleteDomainId(null)}
+                onConfirm={handleDelete}
+                itemName={deleteDomainUrl}
+                itemType="domain"
+                description="This will remove the domain binding and delete the DNS record. This action cannot be undone."
+                requireExactMatch={false}
+            />
         </div>
     )
 }

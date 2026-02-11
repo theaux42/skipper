@@ -4,11 +4,9 @@ import { docker } from '@/lib/docker'
 import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { StatusDashboard } from '@/components/status/status-dashboard'
+import { getCached } from '@/lib/server-cache'
 
-export default async function StatusPage() {
-    const session = await getSession()
-    if (!session) redirect('/login')
-
+async function fetchServicesWithUptime() {
     const services = await db.service.findMany({
         include: {
             project: true,
@@ -17,7 +15,6 @@ export default async function StatusPage() {
         orderBy: { updatedAt: 'desc' }
     })
 
-    // Get container uptimes
     const servicesWithUptime = await Promise.all(
         services.map(async (service) => {
             let uptime = ''
@@ -48,6 +45,16 @@ export default async function StatusPage() {
             }
         })
     )
+
+    return servicesWithUptime
+}
+
+export default async function StatusPage() {
+    const session = await getSession()
+    if (!session) redirect('/login')
+
+    // Cache service uptime data for 30 seconds to avoid inspecting every container on each load
+    const servicesWithUptime = await getCached('services-with-uptime', fetchServicesWithUptime, 30_000)
 
     return (
         <div className="container mx-auto p-8 max-w-7xl animate-in fade-in duration-500">

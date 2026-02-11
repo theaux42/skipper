@@ -152,5 +152,5 @@ export async function deployTemplate(templateId: string, projectName: string) {
     }
 
     revalidatePath('/dashboard')
-    redirect(`/projects/${project.id}`)
+    redirect(`/projects/${project.id}?tab=logs`)
 }

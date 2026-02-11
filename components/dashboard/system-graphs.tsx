@@ -71,7 +71,7 @@ function BarMetric({ label, value1, label1, value2, label2, color1, color2 }: {
 }
 
 export function SystemGraphs() {
-    const { data, error } = useSWR('/api/status/system', fetcher, { refreshInterval: 5000 })
+    const { data, error } = useSWR('/api/status/system', fetcher, { refreshInterval: 10000, dedupingInterval: 8000 })
 
     if (error) return null
     if (!data) {
