@@ -70,7 +70,7 @@ export function TemplateDeployDialog({
             <DialogContent className="sm:max-w-[520px]">
                 <DialogHeader>
                     <div className="flex items-center gap-4 mb-2">
-                        <div className="w-14 h-14 rounded-xl bg-muted/80 flex items-center justify-center overflow-hidden border border-muted-foreground/10 shrink-0">
+                        <div className="w-14 h-14 rounded-sm bg-accent flex items-center justify-center overflow-hidden border border-border shrink-0">
                             <img
                                 src={`/api/templates/${template.id}/logo`}
                                 alt={template.name}
@@ -158,7 +158,7 @@ export function TemplateDeployDialog({
                     </div>
 
                     {/* Info box */}
-                    <div className="bg-muted/50 rounded-lg p-3 border border-muted-foreground/10">
+                    <div className="bg-accent rounded-sm p-3 border border-border">
                         <p className="text-xs text-muted-foreground">
                             <strong className="text-foreground">What happens next:</strong> The template's Docker Compose stack will be deployed automatically.
                             Environment variables and secrets will be generated. If a default domain is configured, a public URL will be created automatically.
@@ -177,7 +177,6 @@ export function TemplateDeployDialog({
                     <Button
                         onClick={handleDeploy}
                         disabled={deploying}
-                        className="bg-violet-600 hover:bg-violet-700 text-white"
                     >
                         {deploying ? (
                             <>

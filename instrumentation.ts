@@ -55,7 +55,7 @@ export async function register() {
 
                 let cloudflared = { running: false, uptime: '', status: 'not found' }
                 try {
-                    const containers = await docker.listContainers({ all: true, filters: { name: ['homelab-cloudflared'] } })
+                    const containers = await docker.listContainers({ all: true, filters: { name: ['skipper-cloudflared'] } })
                     if (containers.length > 0) {
                         const c = containers[0]
                         cloudflared = { running: c.State === 'running', uptime: c.Status || '', status: c.State || 'unknown' }

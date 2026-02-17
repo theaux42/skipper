@@ -7,11 +7,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 export default function CloudflarePage() {
     return (
         <div className="container mx-auto p-8 max-w-7xl animate-in fade-in duration-500">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Cloudflare Integration</h1>
-            <p className="text-muted-foreground mb-8">Manage tunnels, domains, and access settings.</p>
+            <h1 className="heading-display text-4xl mb-2">Cloudflare <em className="heading-display-italic">Integration</em></h1>
+            <p className="text-muted-foreground mb-8 text-body">Manage tunnels, domains, and access settings.</p>
 
             <Tabs defaultValue="setup" className="w-full space-y-6">
-                <TabsList className="bg-muted/50">
+                <TabsList>
                     <TabsTrigger value="setup">Configuration</TabsTrigger>
                     <TabsTrigger value="tunnels">Tunnels</TabsTrigger>
                 </TabsList>

@@ -2,12 +2,13 @@
 'use client'
 
 import { useState } from 'react'
-import { Play, Square, RotateCw, Trash } from 'lucide-react'
+import { Play, Square, RotateCw, Trash2, Loader2 } from 'lucide-react'
 import { serviceAction } from '@/lib/actions/service-actions'
 import { deleteService } from '@/lib/actions/service-delete'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner' // Using sonner as requested
+import { toast } from 'sonner'
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 
 interface ServiceHeaderProps {
@@ -19,11 +20,13 @@ interface ServiceHeaderProps {
 
 export function ServiceHeader({ serviceId, status, projectId, name }: ServiceHeaderProps) {
     const router = useRouter()
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState<string | null>(null)
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
+    const isLoading = loading !== null
+
     const handleAction = async (action: 'start' | 'stop' | 'restart') => {
-        setLoading(true)
+        setLoading(action)
         try {
             const result = await serviceAction(serviceId, action)
             if (result.success) {
@@ -35,12 +38,12 @@ export function ServiceHeader({ serviceId, status, projectId, name }: ServiceHea
         } catch (e) {
             toast.error('An error occurred')
         } finally {
-            setLoading(false)
+            setLoading(null)
         }
     }
 
     const handleDelete = async () => {
-        setLoading(true)
+        setLoading('delete')
         try {
             const result = await deleteService(serviceId)
             if (result.success) {
@@ -53,56 +56,58 @@ export function ServiceHeader({ serviceId, status, projectId, name }: ServiceHea
             console.error(e)
             toast.error('An error occurred')
         } finally {
-            setLoading(false)
+            setLoading(null)
         }
     }
 
     return (
-        <div className="flex justify-between items-center bg-zinc-900 border border-zinc-800 p-6 rounded-lg mb-6">
-            <div className="flex items-center gap-4">
-                {/* Status Dot */}
-                <div className={`w-3 h-3 rounded-full ${getStatusColor(status)} shadow-[0_0_10px_rgba(0,0,0,0.5)]`} />
-                <div>
-                    <h1 className="text-2xl font-bold text-white">{name}</h1>
-                    <div className="text-sm text-zinc-400 capitalize">{status.toLowerCase()}</div>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <div className="flex items-center gap-3">
+                    <h1 className="heading-display text-4xl">{name}</h1>
+                    <Badge variant="outline" className={`${getStatusTextColor(status)} border-current`}>
+                        {status}
+                    </Badge>
                 </div>
+                <p className="text-muted-foreground mt-2 text-body">Service in project</p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
                 <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleAction('start')}
-                    disabled={loading || status === 'RUNNING'}
-                    className="bg-zinc-800 border-zinc-700 hover:bg-zinc-700 text-white"
+                    disabled={isLoading || status === 'RUNNING'}
                 >
-                    <Play className="w-4 h-4 mr-2 text-green-500" /> Start
+                    {loading === 'start' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
+                    Start
                 </Button>
                 <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleAction('stop')}
-                    disabled={loading || status === 'STOPPED'}
-                    className="bg-zinc-800 border-zinc-700 hover:bg-zinc-700 text-white"
+                    disabled={isLoading || status === 'STOPPED'}
                 >
-                    <Square className="w-4 h-4 mr-2 text-red-500" /> Stop
+                    {loading === 'stop' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Square className="mr-2 h-4 w-4" />}
+                    Stop
                 </Button>
                 <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleAction('restart')}
-                    disabled={loading}
-                    className="bg-zinc-800 border-zinc-700 hover:bg-zinc-700 text-white"
+                    disabled={isLoading}
                 >
-                    <RotateCw className="w-4 h-4 mr-2 text-blue-500" /> Restart
+                    {loading === 'restart' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RotateCw className="mr-2 h-4 w-4" />}
+                    Restart
                 </Button>
                 <Button
                     variant="destructive"
                     size="sm"
                     onClick={() => setDeleteDialogOpen(true)}
-                    disabled={loading}
+                    disabled={isLoading}
                 >
-                    <Trash className="w-4 h-4" />
+                    {loading === 'delete' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+                    Delete
                 </Button>
             </div>
 
@@ -118,13 +123,14 @@ export function ServiceHeader({ serviceId, status, projectId, name }: ServiceHea
     )
 }
 
-function getStatusColor(status: string) {
+function getStatusTextColor(status: string) {
     switch (status) {
-        case 'RUNNING': return 'bg-green-500'
-        case 'STOPPED': return 'bg-zinc-500'
-        case 'ERROR': return 'bg-red-500'
-        case 'STARTING': return 'bg-yellow-500'
-        case 'BUILDING': return 'bg-blue-500'
-        default: return 'bg-zinc-500'
+        case 'RUNNING': return 'text-emerald-600 dark:text-emerald-500'
+        case 'STOPPED': return 'text-muted-foreground'
+        case 'ERROR': return 'text-destructive'
+        case 'STARTING': return 'text-amber-600 dark:text-amber-500'
+        case 'BUILDING': return 'text-bronze'
+        case 'DEPLOYING': return 'text-bronze'
+        default: return 'text-muted-foreground'
     }
 }

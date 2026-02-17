@@ -22,10 +22,10 @@ export function ServiceTerminal({ serviceId, containerId }: { serviceId: string,
         const term = new Terminal({
             cursorBlink: true,
             fontSize: 14,
-            fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+            fontFamily: 'Monofont, Menlo, Monaco, "Courier New", monospace',
             theme: {
-                background: '#09090b', // zinc-950
-                foreground: '#f4f4f5', // zinc-100
+                background: '#1A1614', // Speakeasy
+                foreground: '#F2F0E9', // Parchment
                 cursor: '#e4e4e7',
                 selectionBackground: '#3f3f46',
             },
@@ -98,9 +98,9 @@ export function ServiceTerminal({ serviceId, containerId }: { serviceId: string,
 
     if (!containerId) {
         return (
-            <div className="flex items-center justify-center h-[500px] text-muted-foreground border border-zinc-800 rounded-lg bg-zinc-950/50">
+            <div className="flex items-center justify-center h-[500px] text-muted-foreground border border-border rounded-sm bg-card">
                 <div className="text-center">
-                    <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-zinc-600" />
+                    <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-muted-foreground" />
                     <p>Waiting for container...</p>
                 </div>
             </div>
@@ -108,10 +108,10 @@ export function ServiceTerminal({ serviceId, containerId }: { serviceId: string,
     }
 
     return (
-        <div className="h-[600px] w-full bg-zinc-950 rounded-lg overflow-hidden border border-zinc-800 relative group">
+        <div className="h-[600px] w-full bg-[#1A1614] rounded-sm overflow-hidden border border-border relative group">
             <div ref={terminalRef} className="h-full w-full p-2" />
             {!connected && (
-                <div className="absolute top-2 right-2 flex items-center gap-2 px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-xs text-zinc-400">
+                <div className="absolute top-2 right-2 flex items-center gap-2 px-2 py-1 rounded-sm bg-card border border-border text-xs text-muted-foreground">
                     <Loader2 className="w-3 h-3 animate-spin" /> Connecting...
                 </div>
             )}

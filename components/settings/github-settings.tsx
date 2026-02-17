@@ -46,7 +46,7 @@ export function GitHubSettings() {
                 <CardDescription>Configure access to import private repositories and browse code.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/20">
+                <div className="flex items-center justify-between p-4 border border-border rounded-sm bg-accent">
                     <div className="flex items-center gap-3">
                         {configured ? <CheckCircle className="text-emerald-500 w-5 h-5" /> : <XCircle className="text-muted-foreground w-5 h-5" />}
                         <div>

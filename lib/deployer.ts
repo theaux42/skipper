@@ -69,19 +69,19 @@ export async function deployService(serviceId: string) {
             await appendLog(serviceId, `Step 3: Deploying using Docker Compose...`)
             console.log(`Deploying ${name} using Docker Compose...`)
             // Use Docker Compose
-            // We use the project name to isolate containers e.g. -p homelab-projectId-name
-            const projectName = `homelab-${projectId}-${name}`.toLowerCase()
+            // We use the project name to isolate containers e.g. -p skipper-projectId-name
+            const projectName = `skipper-${projectId}-${name}`.toLowerCase()
 
             // Down previous if exists (optional, up -d is usually smart)
             // await execAsync(`docker compose -f ${composePath} -p ${projectName} down`)
 
             // Up
             // Ensure they join the network? 
-            // We usually want them in homelab-panel-net to be reachable by tunnel
+            // We usually want them in skipper-net to be reachable by tunnel
             // We can enforce network in override or assume user adds it.
             // For now, let's just run it. If user doesn't define network, they can't be exposed easily via our internal DNS logic which assumes IP or container name alias in shared network.
             // BUT, if we use standard compose, we might not need to mess with networks if we use host networking or similar? No.
-            // Best approach: User defines network `homelab-panel-net` external: true in their compose.
+            // Best approach: User defines network `skipper-net` external: true in their compose.
             // Or we append an override file.
 
             await appendLog(serviceId, `Running: docker compose up -d --build`)
@@ -108,7 +108,7 @@ export async function deployService(serviceId: string) {
             await appendLog(serviceId, `Step 3: Building Docker image...`)
             console.log(`Deploying ${name} using Dockerfile...`)
             // Standard Docker Build
-            const imageName = `homelab/${projectId}-${name}:latest`
+            const imageName = `skipper/${projectId}-${name}:latest`
 
             const stream = await docker.buildImage({
                 context: targetDir,
@@ -143,15 +143,15 @@ export async function deployService(serviceId: string) {
 
             const container = await docker.createContainer({
                 Image: imageName,
-                name: `homelab-${projectId}-${name}`,
+                name: `skipper-${projectId}-${name}`,
                 Env: envVars,
                 HostConfig: {
-                    NetworkMode: 'homelab-panel-net',
+                    NetworkMode: 'skipper-net',
                     RestartPolicy: { Name: 'unless-stopped' }
                 },
                 Labels: {
-                    'homelab.service.id': service.id,
-                    'homelab.project.id': projectId
+                    'skipper.service.id': service.id,
+                    'skipper.project.id': projectId
                 }
             })
 

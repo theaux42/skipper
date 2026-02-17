@@ -91,25 +91,25 @@ export default function LoginPage() {
 
     return (
         <div className="container relative h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0 bg-background text-foreground">
-            <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
-                <div className="absolute inset-0 bg-zinc-900" />
+            <div className="relative hidden h-full flex-col bg-card p-10 lg:flex dark:border-r border-border">
+                <div className="absolute inset-0 bg-card" />
                 <div className="absolute inset-0 z-0">
                     <Image
-                        src="/login-bg.png"
+                        src="/login-bg.webp"
                         alt="Background"
                         fill
-                        className="object-cover opacity-80"
+                        className="object-cover opacity-60 dark:opacity-40"
                         priority
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-card/90 via-card/50 to-card/20" />
                 </div>
-                <div className="relative z-20 flex items-center text-lg font-medium">
+                <div className="relative z-20 flex items-center text-lg font-sans font-medium">
                     <Command className="mr-2 h-6 w-6" />
-                    Homelab PaaS
+                    <span className="heading-display">Skipper</span>
                 </div>
                 <div className="relative z-20 mt-auto">
                     <blockquote className="space-y-2">
-                        <p className="text-lg">
+                        <p className="heading-display-italic text-2xl">
                             &ldquo;Manage your Docker infrastructure with the precision and elegance it deserves.&rdquo;
                         </p>
                     </blockquote>
@@ -118,10 +118,10 @@ export default function LoginPage() {
             <div className="lg:p-8 relative z-10 w-full">
                 <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
                     <div className="flex flex-col space-y-2 text-center">
-                        <h1 className="text-2xl font-semibold tracking-tight">
-                            {activeTab === "signin" ? "Welcome back" : "Create an account"}
+                        <h1 className="heading-display text-3xl">
+                            {activeTab === "signin" ? <><em className="heading-display-italic">Welcome</em> back</> : <>Create an <em className="heading-display-italic">account</em></>}
                         </h1>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground text-body">
                             {activeTab === "signin"
                                 ? "Enter your credentials to access your dashboard"
                                 : "Enter your email below to create your account"}
@@ -130,7 +130,7 @@ export default function LoginPage() {
 
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                         {registrationAllowed && !checkingStatus && (
-                            <TabsList className="grid w-full grid-cols-2 mb-4 bg-muted/50">
+                            <TabsList className="grid w-full grid-cols-2 mb-4">
                                 <TabsTrigger value="signin">Sign In</TabsTrigger>
                                 <TabsTrigger value="signup">Register</TabsTrigger>
                             </TabsList>
@@ -148,7 +148,7 @@ export default function LoginPage() {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         disabled={isLoading}
-                                        className="bg-background/50"
+
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -160,7 +160,7 @@ export default function LoginPage() {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         disabled={isLoading}
-                                        className="bg-background/50"
+
                                     />
                                 </div>
                                 <Button type="submit" className="w-full" disabled={isLoading}>
@@ -189,7 +189,7 @@ export default function LoginPage() {
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
                                             disabled={isLoading}
-                                            className="bg-background/50"
+
                                         />
                                     </div>
                                     <div className="space-y-2">
@@ -202,7 +202,7 @@ export default function LoginPage() {
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
                                             disabled={isLoading}
-                                            className="bg-background/50"
+
                                         />
                                     </div>
                                     <div className="space-y-2">
@@ -215,7 +215,7 @@ export default function LoginPage() {
                                             onChange={(e) => setPassword(e.target.value)}
                                             disabled={isLoading}
                                             minLength={8}
-                                            className="bg-background/50"
+
                                         />
                                     </div>
                                     <Button type="submit" className="w-full" disabled={isLoading}>

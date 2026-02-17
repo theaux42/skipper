@@ -27,8 +27,8 @@ export default async function DomainsPage() {
 
     return (
         <div className="container mx-auto p-8 max-w-7xl animate-in fade-in duration-500">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Domains</h1>
-            <p className="text-muted-foreground mb-8">Manage domain bindings and public URLs.</p>
+            <h1 className="heading-display text-4xl mb-2"><em className="heading-display-italic">Domains</em></h1>
+            <p className="text-muted-foreground mb-8 text-body">Manage domain bindings and public URLs.</p>
 
             <DomainsTable
                 domains={JSON.parse(JSON.stringify(domains))}

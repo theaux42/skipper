@@ -10,6 +10,12 @@ export async function bulkContainerAction(serviceIds: string[], action: 'start' 
     let success = 0
     let failed = 0
 
+    // Cleanup Cloudflare DNS records if deleting
+    if (action === 'delete') {
+        const { cleanupExposedUrlsDNS } = await import('./expose-actions')
+        await cleanupExposedUrlsDNS(serviceIds)
+    }
+
     for (const id of serviceIds) {
         const service = await db.service.findUnique({ where: { id }, include: { project: true } })
         if (!service) { failed++; continue }

@@ -102,7 +102,7 @@ export function GitHubPicker({ onSelect, mode }: GitHubPickerProps) {
     }
 
     return (
-        <div className="grid gap-4 p-4 border rounded-md">
+        <div className="grid gap-4 p-4 border rounded-sm">
             <div className="grid gap-2">
                 <Label>Repository</Label>
                 <Select onValueChange={handleRepoChange} disabled={loadingRepos}>
@@ -141,7 +141,7 @@ export function GitHubPicker({ onSelect, mode }: GitHubPickerProps) {
                         <Label>Select {mode === 'DOCKERFILE' ? 'Dockerfile' : 'Compose File'}</Label>
                         {currentPath && <Button variant="ghost" size="sm" onClick={handleBack}>Back</Button>}
                     </div>
-                    <ScrollArea className="h-[200px] border rounded-md p-2">
+                    <ScrollArea className="h-[200px] border rounded-sm p-2">
                         {loadingFiles ? (
                             <div className="flex justify-center p-4"><Loader2 className="animate-spin" /></div>
                         ) : (

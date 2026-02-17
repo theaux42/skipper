@@ -66,14 +66,14 @@ export function CreateProjectDialog({ trigger }: { trigger?: React.ReactNode }) 
                         <div className="grid grid-cols-2 gap-4">
                             <div
                                 onClick={() => !creating && setType('STANDARD')}
-                                className={`cursor-pointer border rounded-md p-4 flex flex-col items-center gap-2 hover:bg-muted ${type === 'STANDARD' ? 'border-primary bg-primary/5' : ''} ${creating ? 'opacity-50 pointer-events-none' : ''}`}
+                                className={`cursor-pointer border rounded-sm p-4 flex flex-col items-center gap-2 hover:bg-muted ${type === 'STANDARD' ? 'border-primary bg-primary/5' : ''} ${creating ? 'opacity-50 pointer-events-none' : ''}`}
                             >
                                 <div className="font-semibold">Standard</div>
                                 <div className="text-xs text-center text-muted-foreground w-full">Single containers managed individually</div>
                             </div>
                             <div
                                 onClick={() => !creating && setType('COMPOSE')}
-                                className={`cursor-pointer border rounded-md p-4 flex flex-col items-center gap-2 hover:bg-muted ${type === 'COMPOSE' ? 'border-primary bg-primary/5' : ''} ${creating ? 'opacity-50 pointer-events-none' : ''}`}
+                                className={`cursor-pointer border rounded-sm p-4 flex flex-col items-center gap-2 hover:bg-muted ${type === 'COMPOSE' ? 'border-primary bg-primary/5' : ''} ${creating ? 'opacity-50 pointer-events-none' : ''}`}
                             >
                                 <div className="font-semibold">Docker Compose</div>
                                 <div className="text-xs text-center text-muted-foreground w-full">Multi-container stack defined by YAML</div>

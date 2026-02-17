@@ -58,13 +58,18 @@ export default async function ProjectPage({
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                         <div className="flex items-center gap-3">
-                            <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
+                            <h1 className="heading-display text-4xl">{project.name}</h1>
                             {isCompose && <Badge variant="secondary">Compose Project</Badge>}
                         </div>
-                        <p className="text-muted-foreground mt-1">{project.description || "No description provided."}</p>
+                        <p className="text-muted-foreground mt-2 text-body">{project.description || "No description provided."}</p>
                     </div>
                     {!isCompose && <DeployDialog projectId={project.id} />}
-                    {isCompose && <ComposeStackControls projectId={project.id} hasServices={project.services.length > 0} />}
+                    {isCompose && (
+                        <ComposeStackControls
+                            projectId={project.id}
+                            hasDeployed={project.services.some((s: any) => s.containerId != null || s.status === 'RUNNING' || s.status === 'DEPLOYING' || s.status === 'ERROR')}
+                        />
+                    )}
                 </div>
             </div>
 
@@ -83,7 +88,7 @@ export default async function ProjectPage({
                     </TabsContent>
 
                     <TabsContent value="logs">
-                        <ComposeLogs projectId={project.id} />
+                        <ComposeLogs projectId={project.id} serviceNames={project.services.map((s: any) => s.name)} />
                     </TabsContent>
 
                     <TabsContent value="config">
@@ -134,16 +139,24 @@ export default async function ProjectPage({
 }
 
 function ServicesList({ project, showDeployPlaceholder = false }: { project: any, showDeployPlaceholder?: boolean }) {
+    const isCompose = project.type === 'COMPOSE'
+
     if (project.services.length === 0) {
         return (
             <Card className="border-dashed border-2 bg-transparent">
                 <CardContent className="flex flex-col items-center justify-center py-20 text-muted-foreground space-y-4">
-                    <div className="p-4 bg-muted rounded-full">
+                    <div className="p-4 bg-muted rounded-sm">
                         <Layers className="h-8 w-8" />
                     </div>
-                    <p>No services deployed yet.</p>
-                    {showDeployPlaceholder && (
-                        <DeployDialog projectId={project.id} trigger={<Button variant="outline">Deploy Service</Button>} />
+                    {isCompose ? (
+                        <p>Save your compose configuration to see services here.</p>
+                    ) : (
+                        <>
+                            <p>No services deployed yet.</p>
+                            {showDeployPlaceholder && (
+                                <DeployDialog projectId={project.id} trigger={<Button variant="outline">Deploy Service</Button>} />
+                            )}
+                        </>
                     )}
                 </CardContent>
             </Card>
@@ -154,11 +167,11 @@ function ServicesList({ project, showDeployPlaceholder = false }: { project: any
         <div className="grid grid-cols-1 gap-4">
             {project.services.map((service: any) => (
                 <Link key={service.id} href={`/projects/${project.id}/services/${service.id}`}>
-                    <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+                    <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
                         <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
 
                             <div className="flex items-center gap-4">
-                                <div className={`p-3 rounded-lg ${getStatusBgColor(service.status)}/10`}>
+                                <div className={`p-3 rounded-sm ${getStatusBgColor(service.status)}/10`}>
                                     <Box className={`w-6 h-6 ${getStatusColor(service.status)}`} />
                                 </div>
                                 <div>
@@ -208,24 +221,24 @@ function ServicesList({ project, showDeployPlaceholder = false }: { project: any
 
 function getStatusColor(status: string) {
     switch (status) {
-        case 'RUNNING': return 'text-emerald-500'
-        case 'STOPPED': return 'text-zinc-500'
-        case 'ERROR': return 'text-red-500'
-        case 'STARTING': return 'text-yellow-500'
-        case 'BUILDING': return 'text-blue-500'
-        case 'DEPLOYING': return 'text-blue-500'
-        default: return 'text-zinc-500'
+        case 'RUNNING': return 'text-emerald-600 dark:text-emerald-500'
+        case 'STOPPED': return 'text-muted-foreground'
+        case 'ERROR': return 'text-destructive'
+        case 'STARTING': return 'text-amber-600 dark:text-amber-500'
+        case 'BUILDING': return 'text-bronze'
+        case 'DEPLOYING': return 'text-bronze'
+        default: return 'text-muted-foreground'
     }
 }
 
 function getStatusBgColor(status: string) {
     switch (status) {
         case 'RUNNING': return 'bg-emerald-500'
-        case 'STOPPED': return 'bg-zinc-500'
-        case 'ERROR': return 'bg-red-500'
-        case 'STARTING': return 'bg-yellow-500'
-        case 'BUILDING': return 'bg-blue-500'
-        case 'DEPLOYING': return 'bg-blue-500'
-        default: return 'bg-zinc-500'
+        case 'STOPPED': return 'bg-muted-foreground'
+        case 'ERROR': return 'bg-destructive'
+        case 'STARTING': return 'bg-amber-500'
+        case 'BUILDING': return 'bg-bronze'
+        case 'DEPLOYING': return 'bg-bronze'
+        default: return 'bg-muted-foreground'
     }
 }

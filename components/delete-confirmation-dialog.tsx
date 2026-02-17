@@ -77,7 +77,7 @@ export function DeleteConfirmationDialog({
             <DialogContent className="sm:max-w-[480px]">
                 <DialogHeader>
                     <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-red-500/10 rounded-lg">
+                        <div className="p-2 bg-red-500/10 rounded-sm">
                             <AlertTriangle className="w-5 h-5 text-red-500" />
                         </div>
                         <DialogTitle className="text-xl">
@@ -91,7 +91,7 @@ export function DeleteConfirmationDialog({
 
                 <div className="space-y-4 py-4">
                     {/* Item name display with copy button */}
-                    <div className="bg-muted/50 rounded-lg p-3 border border-muted-foreground/10">
+                    <div className="bg-accent rounded-sm p-3 border border-border">
                         <div className="flex items-center justify-between gap-2">
                             <div className="flex-1 min-w-0">
                                 <p className="text-xs text-muted-foreground mb-1">

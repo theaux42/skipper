@@ -5,25 +5,28 @@ import { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { Loader2, Play, Save } from 'lucide-react'
+import { Loader2, Save } from 'lucide-react'
 import { toast } from 'sonner'
-import { deployComposeProject } from '@/lib/actions/compose-actions'
+import { saveComposeContent } from '@/lib/actions/compose-actions'
+import { useRouter } from 'next/navigation'
 
 export function ComposeEditor({ projectId, initialContent }: { projectId: string, initialContent: string }) {
     const [content, setContent] = useState(initialContent || 'services:\n  app:\n    image: nginx:alpine\n    ports:\n      - "8080:80"\n')
     const [loading, setLoading] = useState(false)
+    const router = useRouter()
 
-    async function handleDeploy() {
+    async function handleSave() {
         setLoading(true)
         try {
-            const res = await deployComposeProject(projectId, content)
+            const res = await saveComposeContent(projectId, content)
             if (res.success) {
-                toast.success('Project deployed successfully')
+                toast.success('Configuration saved')
+                router.refresh()
             } else {
                 toast.error(res.error)
             }
         } catch {
-            toast.error('Deployment failed')
+            toast.error('Save failed')
         } finally {
             setLoading(false)
         }
@@ -39,17 +42,17 @@ export function ComposeEditor({ projectId, initialContent }: { projectId: string
                 <Textarea
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
-                    className="font-mono text-sm h-full resize-none bg-zinc-950 text-zinc-100"
+                    className="font-mono text-sm h-full resize-none bg-muted/50 dark:bg-[#1A1614] text-foreground"
                     placeholder="Paste your docker-compose.yml here..."
                 />
             </CardContent>
             <CardFooter className="justify-between">
                 <p className="text-xs text-muted-foreground">
-                    Changes are applied immediately upon deployment.
+                    Save to update configuration. Use Deploy Stack to start containers.
                 </p>
-                <Button onClick={handleDeploy} disabled={loading}>
-                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
-                    Deploy / Redeploy
+                <Button onClick={handleSave} disabled={loading}>
+                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                    Save
                 </Button>
             </CardFooter>
         </Card>

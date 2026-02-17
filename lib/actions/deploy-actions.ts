@@ -93,15 +93,15 @@ export async function deployFromImage(formData: FormData) {
         // Create Container
         const container = await docker.createContainer({
             Image: image,
-            name: `homelab-${projectId}-${name}`, // Unique name
+            name: `skipper-${projectId}-${name}`, // Unique name
             Env: envVars,
             HostConfig: {
-                NetworkMode: 'homelab-panel-net',
+                NetworkMode: 'skipper-net',
                 RestartPolicy: { Name: 'unless-stopped' },
             },
             Labels: {
-                'homelab.service.id': service.id,
-                'homelab.project.id': projectId
+                'skipper.service.id': service.id,
+                'skipper.project.id': projectId
             }
         })
 

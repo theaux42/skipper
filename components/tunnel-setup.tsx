@@ -32,18 +32,18 @@ export function TunnelSetup({ }: {}) {
     }
 
     return (
-        <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-lg mb-8">
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <CloudLightning className="w-5 h-5 text-orange-500" />
+        <div className="bg-card border border-border p-6 rounded-sm mb-8">
+            <h2 className="text-xl font-serif mb-4 flex items-center gap-2">
+                <CloudLightning className="w-5 h-5 text-bronze" />
                 Cloudflare Tunnel
             </h2>
 
             <div className="space-y-4">
-                <p className="text-zinc-400 text-sm">
-                    Connect your homelab to the internet securely without port forwarding.
+                <p className="text-muted-foreground text-sm">
+                    Connect your server to the internet securely without port forwarding.
                 </p>
 
-                <Button onClick={handleSetup} disabled={loading} className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white">
+                <Button onClick={handleSetup} disabled={loading} className="w-full sm:w-auto">
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Initialize Tunnel
                 </Button>

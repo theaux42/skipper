@@ -7,6 +7,7 @@ import { getSession } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { cloneRepoForProject } from '@/lib/actions/compose-actions'
+import { parseComposeFile } from '@/lib/compose-parser'
 
 export async function createProject(formData: FormData) {
     const session = await getSession()
@@ -37,11 +38,29 @@ export async function createProject(formData: FormData) {
         }
     })
 
-    // For COMPOSE projects with a git repo, clone immediately
+    // For COMPOSE projects with a git repo, clone immediately and pre-create services
     if (type === 'COMPOSE' && gitRepoUrl) {
         const result = await cloneRepoForProject(project.id)
         if (!result.success) {
             console.error('Failed to clone repo at project creation:', result.error)
+        }
+        // Pre-create service records from parsed compose content
+        const updatedProject = await db.project.findUnique({ where: { id: project.id } })
+        if (updatedProject?.composeContent) {
+            const parsed = parseComposeFile(updatedProject.composeContent)
+            for (const svc of parsed.services) {
+                await db.service.upsert({
+                    where: { projectId_name: { projectId: project.id, name: svc.name } },
+                    create: {
+                        projectId: project.id,
+                        name: svc.name,
+                        sourceType: 'COMPOSE_RAW',
+                        status: 'STOPPED',
+                        isComposeService: true
+                    },
+                    update: {}
+                })
+            }
         }
     }
 
@@ -80,6 +99,13 @@ export async function deleteProject(projectId: string) {
     if (!project) return { success: false, error: 'Project not found' }
     if (session.role !== 'ADMIN' && project.ownerId !== session.userId) {
         return { success: false, error: 'Forbidden' }
+    }
+
+    // Cleanup Cloudflare DNS records for all exposed URLs in this project
+    const serviceIds = project.services.map(s => s.id)
+    if (serviceIds.length > 0) {
+        const { cleanupExposedUrlsDNS } = await import('./expose-actions')
+        await cleanupExposedUrlsDNS(serviceIds)
     }
 
     // Stop and remove all containers

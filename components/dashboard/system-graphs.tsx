@@ -19,22 +19,22 @@ function RingChart({ percent, color, label, detail }: { percent: number; color: 
     const offset = circumference - (percent / 100) * circumference
 
     return (
-        <div className="flex items-center gap-4 p-4 rounded-xl border border-zinc-800 bg-zinc-900/50">
+        <div className="flex items-center gap-4 p-4 rounded-sm border border-border bg-card">
             <div className="relative w-[100px] h-[100px] flex-shrink-0">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                     <circle cx="50" cy="50" r={r} fill="none" stroke="currentColor" strokeWidth="8"
-                        className="text-zinc-800" />
+                        className="text-border" />
                     <circle cx="50" cy="50" r={r} fill="none" stroke={color} strokeWidth="8"
                         strokeDasharray={circumference} strokeDashoffset={offset}
                         strokeLinecap="round" className="transition-all duration-1000 ease-out" />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-lg font-bold text-white">{Math.round(percent)}%</span>
+                    <span className="text-lg font-serif font-bold text-foreground">{Math.round(percent)}%</span>
                 </div>
             </div>
             <div>
-                <p className="font-medium text-white text-sm">{label}</p>
-                <p className="text-xs text-zinc-400 mt-0.5">{detail}</p>
+                <p className="font-sans font-medium text-foreground text-sm">{label}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{detail}</p>
             </div>
         </div>
     )
@@ -44,25 +44,25 @@ function BarMetric({ label, value1, label1, value2, label2, color1, color2 }: {
     label: string; value1: string; label1: string; value2: string; label2: string; color1: string; color2: string
 }) {
     return (
-        <div className="p-4 rounded-xl border border-zinc-800 bg-zinc-900/50">
-            <p className="font-medium text-white text-sm mb-3">{label}</p>
+        <div className="p-4 rounded-sm border border-border bg-card">
+            <p className="font-sans font-medium text-foreground text-sm mb-3">{label}</p>
             <div className="space-y-3">
                 <div>
                     <div className="flex justify-between text-xs mb-1">
-                        <span className="text-zinc-400">{label1}</span>
-                        <span className="text-zinc-300 font-mono">{value1}</span>
+                        <span className="text-muted-foreground">{label1}</span>
+                        <span className="text-foreground/80 font-mono">{value1}</span>
                     </div>
-                    <div className="h-2 rounded-full bg-zinc-800 overflow-hidden">
-                        <div className="h-full rounded-full transition-all duration-1000" style={{ width: '60%', background: color1 }} />
+                    <div className="h-1.5 rounded-none bg-border overflow-hidden">
+                        <div className="h-full rounded-none transition-all duration-1000" style={{ width: '60%', background: color1 }} />
                     </div>
                 </div>
                 <div>
                     <div className="flex justify-between text-xs mb-1">
-                        <span className="text-zinc-400">{label2}</span>
-                        <span className="text-zinc-300 font-mono">{value2}</span>
+                        <span className="text-muted-foreground">{label2}</span>
+                        <span className="text-foreground/80 font-mono">{value2}</span>
                     </div>
-                    <div className="h-2 rounded-full bg-zinc-800 overflow-hidden">
-                        <div className="h-full rounded-full transition-all duration-1000" style={{ width: '40%', background: color2 }} />
+                    <div className="h-1.5 rounded-none bg-border overflow-hidden">
+                        <div className="h-full rounded-none transition-all duration-1000" style={{ width: '40%', background: color2 }} />
                     </div>
                 </div>
             </div>
@@ -78,7 +78,7 @@ export function SystemGraphs() {
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 {[...Array(4)].map((_, i) => (
-                    <div key={i} className="h-[130px] rounded-xl border border-zinc-800 bg-zinc-900/50 animate-pulse" />
+                    <div key={i} className="h-[130px] rounded-sm border border-border bg-card animate-pulse" />
                 ))}
             </div>
         )

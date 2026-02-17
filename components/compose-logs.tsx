@@ -5,13 +5,26 @@ import { useState, useRef, useEffect } from 'react'
 import useSWR from 'swr'
 import { Loader2, Terminal, Hammer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { parseAnsi } from '@/lib/ansi-parser'
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
+
+function AnsiLine({ text }: { text: string }) {
+    const segments = parseAnsi(text)
+    return (
+        <>
+            {segments.map((seg, j) => (
+                <span key={j} style={seg.style}>{seg.text}</span>
+            ))}
+        </>
+    )
+}
 
 function LogViewer({ logs, emptyMessage }: { logs: string; emptyMessage: string }) {
     if (!logs) {
         return (
-            <div className="text-zinc-500 flex items-center justify-center h-full">
+            <div className="text-muted-foreground flex items-center justify-center h-full">
                 {emptyMessage}
             </div>
         )
@@ -20,26 +33,24 @@ function LogViewer({ logs, emptyMessage }: { logs: string; emptyMessage: string 
     return (
         <>
             {logs.split('\n').map((line: string, i: number) => {
-                let className = 'text-zinc-300'
-                if (line.includes('ERROR') || line.includes('error') || line.includes('fatal')) className = 'text-red-400'
-                else if (line.includes('Successfully') || line.includes('DONE') || line.includes('Started') || line.includes('Running')) className = 'text-emerald-400'
-                else if (line.includes('Step') || line.includes('---') || line.includes('Building') || line.includes('Pulling')) className = 'text-blue-400'
-                else if (line.startsWith('#') || line.includes('WARNING') || line.includes('warning')) className = 'text-yellow-400'
-
                 return (
-                    <div key={i} className={className}>{line}</div>
+                    <div key={i} className="text-foreground/80">
+                        <AnsiLine text={line} />
+                    </div>
                 )
             })}
         </>
     )
 }
 
-export function ComposeLogs({ projectId }: { projectId: string }) {
+export function ComposeLogs({ projectId, serviceNames = [] }: { projectId: string; serviceNames?: string[] }) {
     const [tab, setTab] = useState<'runtime' | 'deploy'>('runtime')
+    const [selectedService, setSelectedService] = useState<string>('all')
     const scrollRef = useRef<HTMLDivElement>(null)
 
+    const serviceParam = selectedService !== 'all' ? `&service=${selectedService}` : ''
     const { data, error, isLoading } = useSWR(
-        `/api/compose/${projectId}/logs?type=${tab}`,
+        `/api/compose/${projectId}/logs?type=${tab}${serviceParam}`,
         fetcher,
         { refreshInterval: 3000 }
     )
@@ -53,7 +64,7 @@ export function ComposeLogs({ projectId }: { projectId: string }) {
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
                 <Button
                     variant={tab === 'runtime' ? 'default' : 'outline'}
                     size="sm"
@@ -70,14 +81,28 @@ export function ComposeLogs({ projectId }: { projectId: string }) {
                     <Hammer className="mr-2 h-4 w-4" />
                     Deploy Logs
                 </Button>
+
+                {tab === 'runtime' && serviceNames.length > 1 && (
+                    <Select value={selectedService} onValueChange={setSelectedService}>
+                        <SelectTrigger className="w-[180px] h-8 text-sm">
+                            <SelectValue placeholder="All Services" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Services</SelectItem>
+                            {serviceNames.map(name => (
+                                <SelectItem key={name} value={name}>{name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                )}
             </div>
 
-            <div ref={scrollRef} className="bg-zinc-950 border border-zinc-800 rounded-lg font-mono text-xs p-4 h-[500px] overflow-auto whitespace-pre-wrap leading-5">
+            <div ref={scrollRef} className="bg-muted/50 dark:bg-[#1A1614] border border-border rounded-sm font-mono text-xs p-4 h-[500px] overflow-auto whitespace-pre-wrap leading-5 text-foreground">
                 {error ? (
                     <div className="text-red-500">Failed to load logs</div>
                 ) : isLoading && !data ? (
                     <div className="flex justify-center p-10">
-                        <Loader2 className="animate-spin text-zinc-500" />
+                        <Loader2 className="animate-spin text-muted-foreground" />
                     </div>
                 ) : (
                     <LogViewer

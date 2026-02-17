@@ -11,12 +11,12 @@ export async function updateTunnelConfig() {
         include: { service: true }
     })
 
-    const tunnelName = 'homelab-panel-tunnel'
+    const tunnelName = 'skipper-tunnel'
     const tunnel = await getTunnel(tunnelName)
     if (!tunnel) throw new Error("Tunnel not found")
 
     const ingress: any[] = exposedServices.map((sub: any) => {
-        const containerName = `homelab-${sub.service.projectId}-${sub.service.name}`
+        const containerName = `skipper-${sub.service.projectId}-${sub.service.name}`
         return {
             hostname: sub.fullUrl,
             service: `http://${containerName}:${sub.internalPort}`

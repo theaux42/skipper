@@ -34,7 +34,7 @@ export async function setupPanelTunnel() {
         }
     }
 
-    const tunnelName = 'homelab-panel-tunnel'
+    const tunnelName = 'skipper-tunnel'
 
     try {
         let tunnel = await getTunnel(tunnelName)
@@ -55,7 +55,7 @@ export async function setupPanelTunnel() {
         const token = await getTunnelToken(tunnel.id as string) as unknown as string;
 
         // Check if cloudflared container exists
-        const containerName = 'homelab-cloudflared'
+        const containerName = 'skipper-cloudflared'
         const containers = await docker.listContainers({ all: true, filters: { name: [containerName] } })
         const existingContainer = containers[0]
 
@@ -83,7 +83,7 @@ export async function setupPanelTunnel() {
         })
 
         // Ensure network exists
-        const networkName = 'homelab-panel-net'
+        const networkName = 'skipper-net'
         const networks = await docker.listNetworks({ filters: { name: [networkName] } })
         if (networks.length === 0) {
             console.log(`Creating network ${networkName}...`)
@@ -94,13 +94,13 @@ export async function setupPanelTunnel() {
         }
 
         // Start cloudflared
-        // We need to run it attached to homelab-panel-net
+        // We need to run it attached to skipper-net
         await docker.createContainer({
             Image: 'cloudflare/cloudflared:latest',
             name: containerName,
             Cmd: ['tunnel', 'run', '--token', token],
             HostConfig: {
-                NetworkMode: 'homelab-panel-net',
+                NetworkMode: 'skipper-net',
                 RestartPolicy: { Name: 'unless-stopped' }
             }
         }).then(container => container.start())

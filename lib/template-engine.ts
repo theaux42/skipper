@@ -378,9 +378,9 @@ export async function processTemplate(
 export function injectNetworkConfig(composeContent: string, projectId: string): string {
     const doc = parseDocument(composeContent)
 
-    // 1. Ensure homelab-panel-net exists in top-level networks
+    // 1. Ensure skipper-net exists in top-level networks
     // doc.setIn handles creation of 'networks' if missing
-    doc.setIn(['networks', 'homelab-panel-net'], { external: true })
+    doc.setIn(['networks', 'skipper-net'], { external: true })
 
     // 2. Iterate services to set container_name and join networks
     const services = doc.get('services') as any
@@ -389,8 +389,8 @@ export function injectNetworkConfig(composeContent: string, projectId: string): 
             const serviceKey = item.key.value
             const service = item.value
 
-            // Set static container name: homelab-${projectId}-${serviceName}
-            service.set('container_name', `homelab-${projectId}-${serviceKey}`)
+            // Set static container name: skipper-${projectId}-${serviceName}
+            service.set('container_name', `skipper-${projectId}-${serviceKey}`)
 
             // Handle networks
             if (!service.has('networks')) {
@@ -405,8 +405,8 @@ export function injectNetworkConfig(composeContent: string, projectId: string): 
 
             if (Array.isArray(currentNetworks)) {
                 const newNetworks = [...currentNetworks]
-                if (!newNetworks.includes('homelab-panel-net')) {
-                    newNetworks.push('homelab-panel-net')
+                if (!newNetworks.includes('skipper-net')) {
+                    newNetworks.push('skipper-net')
                 }
                 if (!newNetworks.includes('default')) {
                     newNetworks.push('default')
@@ -414,8 +414,8 @@ export function injectNetworkConfig(composeContent: string, projectId: string): 
                 service.set('networks', newNetworks)
             } else if (currentNetworks && typeof currentNetworks === 'object') {
                 const newNetworks = { ...currentNetworks }
-                if (!newNetworks['homelab-panel-net']) {
-                    newNetworks['homelab-panel-net'] = {}
+                if (!newNetworks['skipper-net']) {
+                    newNetworks['skipper-net'] = {}
                 }
                 if (!newNetworks['default']) {
                     newNetworks['default'] = {}

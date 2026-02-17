@@ -24,7 +24,7 @@ export async function syncTunnelBindings() {
         }
 
         const { cf } = await getCloudflareClient()
-        const tunnel = await getTunnel('homelab-panel-tunnel')
+        const tunnel = await getTunnel('skipper-tunnel')
         if (!tunnel) {
             console.log('[Startup] No tunnel found, skipping binding sync')
             return
@@ -74,19 +74,19 @@ export async function syncTunnelBindings() {
                 port = parseInt(url.port) || (url.protocol === 'https:' ? 443 : 80)
             } catch { }
 
-            // Try to match a service by container name pattern: homelab-{projectId}-{serviceName}
+            // Try to match a service by container name pattern: skipper-{projectId}-{serviceName}
             let serviceId: string | null = null
             try {
                 const serviceUrl = new URL(rule.service)
-                const containerHost = serviceUrl.hostname // e.g. homelab-abc123-web
-                if (containerHost.startsWith('homelab-')) {
-                    const rest = containerHost.slice('homelab-'.length) // abc123-web
+                const containerHost = serviceUrl.hostname // e.g. skipper-abc123-web
+                if (containerHost.startsWith('skipper-')) {
+                    const rest = containerHost.slice('skipper-'.length) // abc123-web
                     // projectId is a cuid, find a service whose projectId + name matches
                     const allServices = await db.service.findMany({
                         include: { project: true }
                     })
                     for (const svc of allServices) {
-                        const expectedContainer = `homelab-${svc.projectId}-${svc.name}`
+                        const expectedContainer = `skipper-${svc.projectId}-${svc.name}`
                         if (expectedContainer === containerHost) {
                             serviceId = svc.id
                             break

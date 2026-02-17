@@ -35,7 +35,7 @@ export async function exposeService(formData: FormData) {
 
     try {
         const { cf, accountId } = await getCloudflareClient()
-        const tunnelName = 'homelab-panel-tunnel'
+        const tunnelName = 'skipper-tunnel'
         const tunnel = await getTunnel(tunnelName)
 
         let dnsRecordId: string | null = null
@@ -68,7 +68,7 @@ export async function exposeService(formData: FormData) {
                                 content: targetContent,
                                 proxied: true,
                                 ttl: 1,
-                                comment: 'Homelab Panel Auto-updated'
+                                comment: 'Skipper Auto-updated'
                             })
                         }
                         dnsRecordId = record.id
@@ -82,7 +82,7 @@ export async function exposeService(formData: FormData) {
                             content: targetContent,
                             proxied: true,
                             ttl: 1,
-                            comment: 'Homelab Panel Auto-created'
+                            comment: 'Skipper Auto-created'
                         })
                         dnsRecordId = dnsRecord.id || null
                     }
@@ -151,6 +151,109 @@ export async function unexposeService(exposedUrlId: string) {
     return { success: true }
 }
 
+export async function updateExposedUrl(exposedUrlId: string, data: {
+    subdomain?: string
+    domainSuffix?: string
+    port?: number
+    serviceId?: string
+}) {
+    const exposed = await db.exposedUrl.findUnique({
+        where: { id: exposedUrlId },
+        include: { service: true }
+    })
+
+    if (!exposed) return { success: false, error: 'Not found' }
+
+    const newSubdomain = data.subdomain || exposed.subdomain
+    const newDomainSuffix = data.domainSuffix || exposed.domainSuffix
+    const newPort = data.port || exposed.internalPort
+    const newServiceId = data.serviceId || exposed.serviceId
+    const newFullUrl = `${newSubdomain}.${newDomainSuffix}`
+
+    // Check if new URL conflicts with another domain (unless it's the same)
+    if (newFullUrl !== exposed.fullUrl) {
+        const existing = await db.exposedUrl.findFirst({ where: { fullUrl: newFullUrl } })
+        if (existing) return { success: false, error: 'This URL is already in use' }
+    }
+
+    try {
+        const { cf } = await getCloudflareClient()
+        const tunnel = await getTunnel('skipper-tunnel')
+
+        // If domain/subdomain changed, update or recreate DNS record
+        if (newFullUrl !== exposed.fullUrl && tunnel) {
+            // Delete old DNS record if it exists
+            if (exposed.dnsRecordId) {
+                try {
+                    const zones = await cf.zones.list({ name: exposed.domainSuffix })
+                    if (zones.result && zones.result.length > 0) {
+                        await cf.dns.records.delete(exposed.dnsRecordId, { zone_id: zones.result[0].id })
+                    }
+                } catch (e: any) {
+                    console.error('Failed to delete old DNS record:', e)
+                }
+            }
+
+            // Create new DNS record
+            let newDnsRecordId: string | null = null
+            try {
+                const zones = await cf.zones.list({ name: newDomainSuffix })
+                if (zones.result && zones.result.length > 0) {
+                    const zoneId = zones.result[0].id
+                    const dnsRecord = await cf.dns.records.create({
+                        zone_id: zoneId,
+                        type: 'CNAME',
+                        name: newSubdomain,
+                        content: `${tunnel.id}.cfargotunnel.com`,
+                        proxied: true,
+                        ttl: 1,
+                        comment: 'Skipper Auto-created'
+                    })
+                    newDnsRecordId = dnsRecord.id || null
+                }
+            } catch (e: any) {
+                console.error('Failed to create new DNS record:', e)
+            }
+
+            // Update DB with new values
+            await db.exposedUrl.update({
+                where: { id: exposedUrlId },
+                data: {
+                    subdomain: newSubdomain,
+                    domainSuffix: newDomainSuffix,
+                    fullUrl: newFullUrl,
+                    internalPort: newPort,
+                    serviceId: newServiceId,
+                    dnsRecordId: newDnsRecordId
+                }
+            })
+        } else {
+            // Only port or service changed, no DNS update needed
+            await db.exposedUrl.update({
+                where: { id: exposedUrlId },
+                data: {
+                    internalPort: newPort,
+                    serviceId: newServiceId
+                }
+            })
+        }
+
+        // Update tunnel config
+        await updateTunnelConfigInternal()
+
+        const service = await db.service.findUnique({ where: { id: newServiceId } })
+        if (service) {
+            revalidatePath(`/projects/${service.projectId}/services/${newServiceId}`)
+        }
+        revalidatePath('/domains')
+        return { success: true }
+
+    } catch (e: any) {
+        console.error('Update failed:', e)
+        return { success: false, error: e.message }
+    }
+}
+
 export async function addCustomDomain(data: {
     hostname: string
     protocol: string
@@ -193,7 +296,7 @@ export async function addCustomDomain(data: {
 
     try {
         const { cf, accountId } = await getCloudflareClient()
-        const tunnel = await getTunnel('homelab-panel-tunnel')
+        const tunnel = await getTunnel('skipper-tunnel')
 
         let dnsRecordId: string | null = null
 
@@ -209,7 +312,7 @@ export async function addCustomDomain(data: {
                         content: `${tunnel.id}.cfargotunnel.com`,
                         proxied: true,
                         ttl: 1,
-                        comment: 'Homelab Panel Custom Domain'
+                        comment: 'Skipper Custom Domain'
                     })
                     dnsRecordId = dnsRecord.id || null
                 }
@@ -243,7 +346,7 @@ export async function addCustomDomain(data: {
 async function updateTunnelConfigInternal() {
     try {
         const { cf, accountId } = await getCloudflareClient()
-        const tunnel = await getTunnel('homelab-panel-tunnel')
+        const tunnel = await getTunnel('skipper-tunnel')
         if (!tunnel) return
 
         const exposedServices = await db.exposedUrl.findMany({
@@ -251,7 +354,7 @@ async function updateTunnelConfigInternal() {
         })
 
         const ingress: any[] = exposedServices.map((sub: any) => {
-            const containerName = `homelab-${sub.service.projectId}-${sub.service.name}`
+            const containerName = `skipper-${sub.service.projectId}-${sub.service.name}`
             return {
                 hostname: sub.fullUrl,
                 service: `http://${containerName}:${sub.internalPort}`
@@ -265,5 +368,57 @@ async function updateTunnelConfigInternal() {
         })
     } catch (e: any) {
         console.error('Failed to update tunnel config:', e)
+    }
+}
+
+/**
+ * Cleanup Cloudflare DNS records for exposed URLs associated with service(s)
+ * This is called before deleting services or projects to ensure DNS cleanup
+ */
+export async function cleanupExposedUrlsDNS(serviceIds: string[]) {
+    if (serviceIds.length === 0) return
+
+    try {
+        const exposedUrls = await db.exposedUrl.findMany({
+            where: { serviceId: { in: serviceIds } }
+        })
+
+        if (exposedUrls.length === 0) return
+
+        const { cf } = await getCloudflareClient()
+
+        for (const exposed of exposedUrls) {
+            if (exposed.dnsRecordId) {
+                try {
+                    const zones = await cf.zones.list({ name: exposed.domainSuffix })
+                    if (zones.result && zones.result.length > 0) {
+                        await cf.dns.records.delete(exposed.dnsRecordId, { zone_id: zones.result[0].id })
+                        console.log(`Cleaned up DNS record for ${exposed.fullUrl}`)
+                    }
+                } catch (e: any) {
+                    console.error(`Failed to cleanup DNS for ${exposed.fullUrl}:`, e.message)
+                }
+            }
+        }
+
+        // Update tunnel config after cleanup
+        await updateTunnelConfigInternal()
+        revalidatePath('/domains')
+    } catch (e: any) {
+        console.error('Failed to cleanup exposed URLs DNS:', e)
+    }
+}
+
+/**
+ * Manually sync tunnel bindings from Cloudflare
+ */
+export async function syncTunnelBindingsManual() {
+    const { syncTunnelBindings } = await import('../sync-tunnel-bindings')
+    try {
+        await syncTunnelBindings()
+        revalidatePath('/domains')
+        return { success: true }
+    } catch (e: any) {
+        return { success: false, error: e.message }
     }
 }

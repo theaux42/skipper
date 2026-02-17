@@ -46,24 +46,24 @@ export function ServiceEnv({ serviceId, envs }: { serviceId: string, envs: any[]
 
     return (
         <div className="space-y-6">
-            <div className="bg-zinc-950 p-4 rounded-lg border border-zinc-800">
+            <div className="bg-card p-4 rounded-sm border border-border">
                 <div className="space-y-2 mb-6">
                     {envs.map((env) => (
                         <div key={env.id} className="flex gap-2 items-center">
-                            <Input value={env.key} readOnly className="bg-zinc-900 border-zinc-800 text-zinc-400 w-1/3" />
-                            <Input value={env.value} readOnly className="bg-zinc-900 border-zinc-800 text-zinc-400 flex-1" type="password" />
+                            <Input value={env.key} readOnly className="bg-accent border-border text-muted-foreground w-1/3" />
+                            <Input value={env.value} readOnly className="bg-accent border-border text-muted-foreground flex-1" type="password" />
                             <Button variant="ghost" size="icon" onClick={() => handleDelete(env.id)} disabled={loading}>
-                                <Trash2 className="w-4 h-4 text-zinc-500 hover:text-red-400" />
+                                <Trash2 className="w-4 h-4 text-muted-foreground hover:text-red-400" />
                             </Button>
                         </div>
                     ))}
-                    {envs.length === 0 && <p className="text-zinc-500 text-sm">No environment variables.</p>}
+                    {envs.length === 0 && <p className="text-muted-foreground text-sm">No environment variables.</p>}
                 </div>
 
-                <form id="add-env-form" action={handleAdd} className="flex gap-2 border-t border-zinc-800 pt-4">
-                    <Input name="key" placeholder="KEY" className="bg-zinc-900 border-zinc-700 w-1/3" required />
-                    <Input name="value" placeholder="VALUE" className="bg-zinc-900 border-zinc-700 flex-1" required />
-                    <Button type="submit" size="icon" className="bg-white text-black hover:bg-zinc-200" disabled={loading}>
+                <form id="add-env-form" action={handleAdd} className="flex gap-2 border-t border-border pt-4">
+                    <Input name="key" placeholder="KEY" className="bg-accent border-border w-1/3" required />
+                    <Input name="value" placeholder="VALUE" className="bg-accent border-border flex-1" required />
+                    <Button type="submit" size="icon" disabled={loading}>
                         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                     </Button>
                 </form>

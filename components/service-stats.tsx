@@ -16,18 +16,18 @@ export function ServiceStats({ serviceId }: { serviceId: string }) {
   // We can show raw bytes or percentage of limit.
   
   if (error) return <div className="text-red-500">Failed to load stats</div>
-  if (isLoading || !data) return <div className="animate-pulse h-20 bg-zinc-800 rounded-lg"></div>
+  if (isLoading || !data) return <div className="animate-pulse h-20 bg-card rounded-sm border border-border"></div>
 
   if (data.status !== 'RUNNING') {
       return (
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-lg">
-                <div className="text-zinc-400 text-sm mb-2">CPU Usage</div>
-                <div className="text-2xl font-bold text-zinc-600">--</div>
+            <div className="bg-card border border-border p-4 rounded-sm">
+                <div className="text-muted-foreground text-sm mb-2 label-ui">CPU Usage</div>
+                <div className="text-2xl font-serif text-muted-foreground">--</div>
             </div>
-            <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-lg">
-                <div className="text-zinc-400 text-sm mb-2">Memory Usage</div>
-                <div className="text-2xl font-bold text-zinc-600">--</div>
+            <div className="bg-card border border-border p-4 rounded-sm">
+                <div className="text-muted-foreground text-sm mb-2 label-ui">Memory Usage</div>
+                <div className="text-2xl font-serif text-muted-foreground">--</div>
             </div>
           </div>
       )
@@ -40,21 +40,21 @@ export function ServiceStats({ serviceId }: { serviceId: string }) {
 
   return (
     <div className="grid grid-cols-2 gap-4">
-       <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-lg">
+       <div className="bg-card border border-border p-4 rounded-sm">
            <div className="flex justify-between items-center mb-2">
-                <div className="text-zinc-400 text-sm">CPU Usage</div>
-                <div className="text-xs text-zinc-500">{cpu}%</div>
+                <div className="text-muted-foreground text-sm label-ui">CPU Usage</div>
+                <div className="text-xs text-muted-foreground">{cpu}%</div>
            </div>
-           <Progress value={Math.min(data.cpu, 100)} className="h-2 bg-zinc-800" />
-           <div className="mt-2 text-2xl font-bold text-white">{cpu}%</div>
+           <Progress value={Math.min(data.cpu, 100)} className="h-1.5" />
+           <div className="mt-2 text-2xl font-serif text-foreground">{cpu}%</div>
        </div>
-       <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-lg">
+       <div className="bg-card border border-border p-4 rounded-sm">
            <div className="flex justify-between items-center mb-2">
-                <div className="text-zinc-400 text-sm">Memory Usage</div>
-                <div className="text-xs text-zinc-500">{mem} / {memLimit} MB</div>
+                <div className="text-muted-foreground text-sm label-ui">Memory Usage</div>
+                <div className="text-xs text-muted-foreground">{mem} / {memLimit} MB</div>
            </div>
-           <Progress value={Math.min(memPercent, 100)} className="h-2 bg-zinc-800" />
-           <div className="mt-2 text-2xl font-bold text-white">{mem} MB</div>
+           <Progress value={Math.min(memPercent, 100)} className="h-1.5" />
+           <div className="mt-2 text-2xl font-serif text-foreground">{mem} MB</div>
        </div>
     </div>
   )

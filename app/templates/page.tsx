@@ -78,14 +78,14 @@ export default function TemplatesPage() {
     return (
         <div className="container mx-auto p-8 max-w-7xl animate-in fade-in duration-500">
             {/* Header */}
-            <div className="mb-8">
-                <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2.5 rounded-xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 border border-violet-500/20">
-                        <LayoutGrid className="w-6 h-6 text-violet-400" />
+            <div className="mb-10">
+                <div className="flex items-center gap-4 mb-2">
+                    <div className="p-2.5 rounded-sm border border-border">
+                        <LayoutGrid className="w-6 h-6" />
                     </div>
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Template Store</h1>
-                        <p className="text-muted-foreground">Deploy self-hosted apps in one click. {templates.length} templates available.</p>
+                        <h1 className="heading-display text-4xl">Template <em className="heading-display-italic">Store</em></h1>
+                        <p className="text-muted-foreground text-body">Deploy self-hosted apps in one click. {templates.length} templates available.</p>
                     </div>
                 </div>
             </div>
@@ -98,7 +98,7 @@ export default function TemplatesPage() {
                         placeholder="Search templates by name, tag, or description..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="pl-10 h-11 bg-muted/50 border-muted-foreground/20 focus:border-violet-500/50"
+                        className="pl-10 h-11 border-b-border font-sans text-sm normal-case tracking-normal"
                     />
                     {search && (
                         <button
@@ -115,10 +115,7 @@ export default function TemplatesPage() {
                         <Badge
                             key={tag}
                             variant={activeTag === tag ? 'default' : 'outline'}
-                            className={`cursor-pointer transition-all duration-200 hover:scale-105 ${activeTag === tag
-                                ? 'bg-violet-600 hover:bg-violet-700 text-white border-violet-600'
-                                : 'hover:bg-muted hover:border-violet-500/30'
-                                }`}
+                            className={`cursor-pointer transition-all duration-200 hover:scale-105`}
                             onClick={() => setActiveTag(activeTag === tag ? null : tag)}
                         >
                             <Tag className="w-3 h-3 mr-1" />
@@ -150,7 +147,7 @@ export default function TemplatesPage() {
             {/* Loading State */}
             {loading && (
                 <div className="flex items-center justify-center py-20">
-                    <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
+                    <Loader2 className="w-8 h-8 animate-spin text-foreground" />
                     <span className="ml-3 text-muted-foreground">Loading templates...</span>
                 </div>
             )}
@@ -159,7 +156,7 @@ export default function TemplatesPage() {
             {!loading && filtered.length === 0 && (
                 <Card className="border-dashed border-2 bg-transparent">
                     <CardContent className="flex flex-col items-center justify-center py-20 text-muted-foreground space-y-4">
-                        <div className="p-4 bg-muted rounded-full">
+                        <div className="p-4 bg-muted rounded-sm">
                             <Search className="h-8 w-8" />
                         </div>
                         <p>No templates found matching your search.</p>
@@ -176,12 +173,12 @@ export default function TemplatesPage() {
                     {filtered.map(template => (
                         <Card
                             key={template.id}
-                            className="group hover:border-violet-500/30 hover:shadow-lg hover:shadow-violet-500/5 transition-all duration-300 cursor-pointer overflow-hidden"
+                            className="group hover:border-foreground/20 dark:hover:border-bronze/30 transition-all duration-300 cursor-pointer overflow-hidden"
                             onClick={() => setSelectedTemplate(template)}
                         >
                             <CardContent className="p-5">
                                 <div className="flex items-start gap-3 mb-3">
-                                    <div className="w-10 h-10 rounded-lg bg-muted/80 flex items-center justify-center overflow-hidden shrink-0 border border-muted-foreground/10">
+                                    <div className="w-10 h-10 rounded-sm bg-muted flex items-center justify-center overflow-hidden shrink-0 border border-border">
                                         <img
                                             src={`/api/templates/${template.id}/logo`}
                                             alt={template.name}
@@ -192,7 +189,7 @@ export default function TemplatesPage() {
                                         />
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <h3 className="font-semibold text-sm truncate group-hover:text-violet-400 transition-colors">
+                                        <h3 className="font-sans font-medium text-sm truncate group-hover:text-foreground transition-colors">
                                             {template.name}
                                         </h3>
                                         <span className="text-xs text-muted-foreground">

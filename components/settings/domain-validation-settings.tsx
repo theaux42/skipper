@@ -83,7 +83,7 @@ export function DomainValidationSettings() {
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+                <div className="flex items-center justify-between p-4 border border-border rounded-sm bg-accent">
                     <div className="space-y-0.5">
                         <Label className="text-base font-medium">Enable Automatic Validation</Label>
                         <p className="text-sm text-muted-foreground">
@@ -97,7 +97,7 @@ export function DomainValidationSettings() {
                 </div>
 
                 {enabled && (
-                    <div className="p-4 border rounded-lg bg-muted/50 space-y-4 animate-in slide-in-from-top duration-200">
+                    <div className="p-4 border border-border rounded-sm bg-accent space-y-4 animate-in slide-in-from-top duration-200">
                         <div className="space-y-2">
                             <Label htmlFor="interval" className="text-sm font-medium">
                                 Check Interval (hours)

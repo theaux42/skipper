@@ -3,7 +3,7 @@ import simpleGit from 'simple-git';
 import fs from 'fs/promises';
 import path from 'path';
 
-const BASE_DIR = '/opt/homelab-panel/apps';
+const BASE_DIR = '/opt/skipper/apps';
 
 export async function cloneOrPull(repoUrl: string, branch: string, projectId: string, serviceName: string) {
     const targetDir = path.join(BASE_DIR, projectId, serviceName);

@@ -3,8 +3,8 @@
 
 import { db } from '@/lib/db'
 import { getSession } from '@/lib/auth'
-import { processTemplate, injectNetworkConfig } from '@/lib/template-engine'
-import { deployComposeProject } from '@/lib/actions/compose-actions'
+import { processTemplate } from '@/lib/template-engine'
+import { saveComposeContent } from '@/lib/actions/compose-actions'
 import { exposeService } from '@/lib/actions/expose-actions'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -12,6 +12,57 @@ import fs from 'fs/promises'
 import path from 'path'
 
 const META_PATH = path.join(process.cwd(), 'templates', 'meta.json')
+
+const RANDOM_WORDS = [
+    'app', 'web', 'hub', 'srv', 'box', 'lab', 'net', 'dev', 'run', 'pod',
+    'node', 'edge', 'grid', 'flux', 'core', 'base', 'link', 'dock', 'dash', 'bolt'
+]
+
+/**
+ * Sanitize a name into a valid subdomain label:
+ * - lowercase
+ * - replace spaces/underscores with hyphens
+ * - strip any character that isn't a-z, 0-9 or hyphen
+ * - collapse consecutive hyphens, trim leading/trailing hyphens
+ * - cap length to 10
+ * If the result is empty or still invalid, generate a random fallback.
+ */
+function sanitizeSubdomain(name: string): string {
+    let sanitized = name
+        .toLowerCase()
+        .replace(/[\s_]+/g, '-')
+        .replace(/[^a-z0-9-]/g, '')
+        .replace(/-{2,}/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 10)
+        .replace(/-+$/, '') // trim trailing hyphen after slice
+
+    // Must start with a letter or digit and be non-empty
+    if (!sanitized || !/^[a-z0-9]/.test(sanitized)) {
+        const word = RANDOM_WORDS[Math.floor(Math.random() * RANDOM_WORDS.length)]
+        const digits = String(Math.floor(Math.random() * 900) + 100) // 100-999
+        sanitized = `${word}${digits}`
+    }
+
+    return sanitized
+}
+
+/**
+ * Find an available subdomain for a given domain suffix.
+ * If the base subdomain is taken, appends an incrementing number (1, 2, 3...).
+ */
+async function findAvailableSubdomain(base: string, domainSuffix: string): Promise<string> {
+    let candidate = base
+    let suffix = 0
+
+    while (true) {
+        const fullUrl = `${candidate}.${domainSuffix}`
+        const existing = await db.exposedUrl.findFirst({ where: { fullUrl } })
+        if (!existing) return candidate
+        suffix++
+        candidate = `${base}${suffix}`
+    }
+}
 
 export interface TemplateMeta {
     id: string
@@ -100,20 +151,17 @@ export async function deployTemplate(templateId: string, projectName: string) {
         }
     })
 
-    // 5. Build env string
+    // 5. Save compose content + write files to disk (synchronous — must complete before redirect)
     const envString = Object.entries(processed.envVars)
         .map(([k, v]) => `${k}=${v}`)
         .join('\n')
 
-    // 6. Inject Network Config & Deploy as Compose
-    const finalComposeContent = injectNetworkConfig(processed.composeContent, project.id)
-    const result = await deployComposeProject(project.id, finalComposeContent, envString)
-
-    if (!result.success) {
-        return { success: false, error: result.error, projectId: project.id }
+    const saveResult = await saveComposeContent(project.id, processed.composeContent, envString)
+    if (!saveResult.success) {
+        console.error('Failed to save compose content for template:', saveResult.error)
     }
 
-    // 7. Auto-expose domains via Cloudflare (if configured)
+    // 6. Auto-expose domains via Cloudflare (if configured)
     if (defaultDomain && processed.domains.length > 0) {
         let hasCloudflare = false
         try {
@@ -123,22 +171,20 @@ export async function deployTemplate(templateId: string, projectName: string) {
         } catch { }
 
         if (hasCloudflare) {
-            // Expose the primary domain (first one in config)
             const primaryDomain = processed.domains[0]
             if (primaryDomain) {
                 try {
-                    // Find the matching service in the project
                     const service = await db.service.findFirst({
-                        where: {
-                            projectId: project.id,
-                            name: primaryDomain.serviceName
-                        }
+                        where: { projectId: project.id, name: primaryDomain.serviceName }
                     })
 
                     if (service) {
+                        const sanitized = sanitizeSubdomain(projectName || meta.name || templateId)
+                        const subdomain = await findAvailableSubdomain(sanitized, defaultDomain)
+
                         const formData = new FormData()
                         formData.set('serviceId', service.id)
-                        formData.set('subdomain', templateId)
+                        formData.set('subdomain', subdomain)
                         formData.set('domainSuffix', defaultDomain)
                         formData.set('port', String(primaryDomain.port))
 
@@ -152,5 +198,5 @@ export async function deployTemplate(templateId: string, projectName: string) {
     }
 
     revalidatePath('/dashboard')
-    redirect(`/projects/${project.id}?tab=logs`)
+    redirect(`/projects/${project.id}`)
 }

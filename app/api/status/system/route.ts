@@ -49,7 +49,7 @@ async function fetchSystemStats() {
     // Cloudflared container status
     let cloudflared = { running: false, uptime: '', status: 'not found' }
     try {
-        const containers = await docker.listContainers({ all: true, filters: { name: ['homelab-cloudflared'] } })
+        const containers = await docker.listContainers({ all: true, filters: { name: ['skipper-cloudflared'] } })
         if (containers.length > 0) {
             const c = containers[0]
             cloudflared = {

@@ -62,7 +62,7 @@ export function TunnelSetupButton() {
             </CardHeader>
             <CardContent>
                 {status === 'checking' ? (
-                    <div className="flex items-center gap-2 text-sm text-zinc-400">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Loader2 className="h-4 w-4 animate-spin" />
                         Checking tunnel status...
                     </div>
@@ -81,7 +81,6 @@ export function TunnelSetupButton() {
                         <Button
                             onClick={handleSetup}
                             disabled={loading}
-                            className="bg-orange-600 hover:bg-orange-700 text-white"
                         >
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Initialize Tunnel

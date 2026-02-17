@@ -17,8 +17,8 @@ export default async function ContainersPage() {
 
     return (
         <div className="container mx-auto p-8 max-w-7xl animate-in fade-in duration-500">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Containers</h1>
-            <p className="text-muted-foreground mb-8">Manage all containers across your projects.</p>
+            <h1 className="heading-display text-4xl mb-2"><em className="heading-display-italic">Containers</em></h1>
+            <p className="text-muted-foreground mb-8 text-body">Manage all containers across your projects.</p>
 
             <ContainersList services={JSON.parse(JSON.stringify(services))} />
         </div>

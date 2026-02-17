@@ -16,6 +16,9 @@ export default async function DashboardPage() {
         return db.project.findMany({
             where: session.role === 'ADMIN' ? {} : { ownerId: session.userId },
             include: {
+                services: {
+                    select: { status: true }
+                },
                 _count: {
                     select: { services: true }
                 }
@@ -30,8 +33,8 @@ export default async function DashboardPage() {
 
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
-                    <p className="text-muted-foreground mt-1">Manage your applications and services.</p>
+                    <h1 className="heading-display text-4xl">Your <em className="heading-display-italic">Projects</em></h1>
+                    <p className="text-muted-foreground mt-2 text-body">Manage your applications and services.</p>
                 </div>
                 <CreateProjectDialog />
             </div>

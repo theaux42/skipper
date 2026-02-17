@@ -38,11 +38,11 @@ export default function SettingsPage() {
 
     return (
         <div className="container mx-auto p-8 max-w-7xl animate-in fade-in duration-500">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Settings</h1>
-            <p className="text-muted-foreground mb-8">Manage system configuration and integrations.</p>
+            <h1 className="heading-display text-4xl mb-2"><em className="heading-display-italic">Settings</em></h1>
+            <p className="text-muted-foreground mb-8 text-body">Manage system configuration and integrations.</p>
 
             <Tabs defaultValue="system" className="w-full space-y-6">
-                <TabsList className="bg-muted/50">
+                <TabsList>
                     <TabsTrigger value="system">System</TabsTrigger>
                     <TabsTrigger value="domains">Domains</TabsTrigger>
                     <TabsTrigger value="integrations">Integrations</TabsTrigger>

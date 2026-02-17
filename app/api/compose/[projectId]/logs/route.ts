@@ -22,6 +22,7 @@ export async function GET(
     const { projectId } = await params
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') || 'runtime'
+    const service = searchParams.get('service') || ''
 
     const project = await db.project.findUnique({ where: { id: projectId } })
     if (!project) {
@@ -56,8 +57,9 @@ export async function GET(
 
         const workDir = getComposeWorkDir(projectDir, project.gitComposePath)
 
+        const serviceArg = service ? ` ${service}` : ''
         const { stdout, stderr } = await execAsync(
-            `docker compose -p "homelab-${projectId}" logs --tail 200 --no-color 2>&1`,
+            `docker compose -p "skipper-${projectId}" logs --tail 200 --no-color${serviceArg} 2>&1`,
             { cwd: workDir, maxBuffer: 1024 * 1024 }
         )
 

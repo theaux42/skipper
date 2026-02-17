@@ -85,7 +85,7 @@ export async function deployFromGit(formData: FormData) {
 
     // Background process for cloning and building
     (async () => {
-        const tempDir = path.join(os.tmpdir(), `homelab-git-${uuidv4()}`)
+        const tempDir = path.join(os.tmpdir(), `skipper-git-${uuidv4()}`)
         try {
             await fs.promises.mkdir(tempDir, { recursive: true })
 
@@ -107,7 +107,7 @@ export async function deployFromGit(formData: FormData) {
             }
 
             // Build Image
-            const imageName = `homelab-${projectId}-${name}:latest`
+            const imageName = `skipper-${projectId}-${name}:latest`
             console.log(`Building image ${imageName}...`)
 
             const tarStream = await docker.buildImage({
@@ -131,15 +131,15 @@ export async function deployFromGit(formData: FormData) {
             // Create Container
             const container = await docker.createContainer({
                 Image: imageName,
-                name: `homelab-${projectId}-${name}`,
+                name: `skipper-${projectId}-${name}`,
                 Env: envVars,
                 HostConfig: {
-                    NetworkMode: 'homelab-panel-net',
+                    NetworkMode: 'skipper-net',
                     RestartPolicy: { Name: 'unless-stopped' },
                 },
                 Labels: {
-                    'homelab.service.id': service.id,
-                    'homelab.project.id': projectId
+                    'skipper.service.id': service.id,
+                    'skipper.project.id': projectId
                 }
             })
 

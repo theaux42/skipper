@@ -41,14 +41,14 @@ export function TunnelsList() {
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="rounded-md border border-zinc-800">
+                <div className="rounded-sm border border-border">
                     <table className="w-full text-sm text-left">
-                        <thead className="bg-zinc-900 border-b border-zinc-800 text-zinc-400">
+                        <thead className="bg-accent border-b border-border">
                             <tr>
-                                <th className="p-4 font-medium">Name</th>
-                                <th className="p-4 font-medium">Status</th>
-                                <th className="p-4 font-medium">ID</th>
-                                <th className="p-4 font-medium">Created</th>
+                                <th className="p-4 label-ui">Name</th>
+                                <th className="p-4 label-ui">Status</th>
+                                <th className="p-4 label-ui">ID</th>
+                                <th className="p-4 label-ui">Created</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -60,15 +60,15 @@ export function TunnelsList() {
                                 </tr>
                             ) : (
                                 tunnels.map((t) => (
-                                    <tr key={t.id} className="border-b border-zinc-800/50 hover:bg-zinc-900/50 transition-colors">
-                                        <td className="p-4 font-medium text-white">{t.name}</td>
+                                    <tr key={t.id} className="border-b border-border/50 hover:bg-accent/50 transition-colors">
+                                        <td className="p-4 font-medium text-foreground">{t.name}</td>
                                         <td className="p-4">
                                             <Badge variant={t.status === 'healthy' ? 'default' : 'secondary'} className={t.status === 'healthy' ? 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20' : ''}>
                                                 {t.status}
                                             </Badge>
                                         </td>
-                                        <td className="p-4 font-mono text-xs text-zinc-500">{t.id}</td>
-                                        <td className="p-4 text-zinc-400">{new Date(t.created_at).toLocaleDateString()}</td>
+                                        <td className="p-4 font-mono text-xs text-muted-foreground">{t.id}</td>
+                                        <td className="p-4 text-muted-foreground">{new Date(t.created_at).toLocaleDateString()}</td>
                                     </tr>
                                 ))
                             )}

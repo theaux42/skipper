@@ -16,6 +16,10 @@ export async function deleteService(serviceId: string) {
         return { success: false, error: 'Service not found' }
     }
 
+    // Cleanup Cloudflare DNS records for exposed URLs
+    const { cleanupExposedUrlsDNS } = await import('./expose-actions')
+    await cleanupExposedUrlsDNS([serviceId])
+
     // Remove container if it exists
     if (service.containerId) {
         try {

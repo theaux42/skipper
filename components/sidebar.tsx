@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { LayoutDashboard, Settings, LogOut, Box, Globe, Activity, Container, ChevronLeft, ChevronRight, LayoutGrid } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { authClient } from '@/lib/auth-client'
+import { ThemeSwitch } from '@/components/theme-switch'
 
 const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -34,29 +35,36 @@ export function Sidebar() {
 
     return (
         <div className={cn(
-            "sticky top-0 flex h-screen flex-col justify-between border-r border-zinc-800 bg-zinc-950 text-white transition-all duration-300",
+            "sticky top-0 flex h-screen flex-col justify-between border-r border-border bg-sidebar text-sidebar-foreground transition-all duration-300",
             isCollapsed ? "w-16" : "w-64"
         )}>
             <div className={cn("p-6", isCollapsed && "p-3")}>
+                {/* Brand */}
                 <div className={cn(
-                    "flex items-center mb-8 transition-all",
-                    isCollapsed ? "justify-center" : "gap-2"
+                    "flex items-center mb-10 transition-all",
+                    isCollapsed ? "justify-center" : "gap-3"
                 )}>
-                    <Box className="h-8 w-8 text-white flex-shrink-0" />
-                    {!isCollapsed && <span className="text-xl font-bold tracking-tight whitespace-nowrap">Homelab PaaS</span>}
+                    <Box className="h-7 w-7 flex-shrink-0" />
+                    {!isCollapsed && (
+                        <span className="heading-display text-xl whitespace-nowrap">
+                            Skipper
+                        </span>
+                    )}
                 </div>
-                <nav className="space-y-2">
+
+                {/* Navigation */}
+                <nav className="space-y-1">
                     {navItems.map((item) => {
                         const Icon = item.icon
                         const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== '/dashboard')
                         return (
                             <Link key={item.href} href={item.href} title={isCollapsed ? item.name : undefined}>
                                 <div className={cn(
-                                    "flex items-center rounded-lg text-sm font-medium transition-colors",
-                                    isCollapsed ? "justify-center p-3" : "gap-3 px-3 py-2",
+                                    "flex items-center rounded-sm text-sm font-sans font-medium tracking-wide transition-colors duration-200",
+                                    isCollapsed ? "justify-center p-3" : "gap-3 px-3 py-2.5",
                                     isActive
-                                        ? "bg-zinc-800 text-white"
-                                        : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
+                                        ? "bg-sidebar-accent text-sidebar-foreground border border-sidebar-border"
+                                        : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground border border-transparent"
                                 )}>
                                     <Icon className="h-4 w-4 flex-shrink-0" />
                                     {!isCollapsed && <span>{item.name}</span>}
@@ -66,35 +74,48 @@ export function Sidebar() {
                     })}
                 </nav>
             </div>
-            <div className={cn("border-t border-zinc-800")}>
-                <div className={cn("p-6", isCollapsed && "p-3")}>
-                    {isCollapsed ? (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="w-full text-zinc-400 hover:text-white hover:bg-zinc-800/50"
-                            onClick={handleLogout}
-                            title="Logout"
-                        >
-                            <LogOut className="h-4 w-4" />
-                        </Button>
-                    ) : (
-                        <Button
-                            variant="ghost"
-                            className="w-full justify-start text-zinc-400 hover:text-white hover:bg-zinc-800/50 pl-3"
-                            onClick={handleLogout}
-                        >
-                            <LogOut className="h-4 w-4 mr-3" />
-                            Logout
-                        </Button>
+
+            {/* Bottom section */}
+            <div className="border-t border-border">
+                {/* Theme switch */}
+                <div className={cn("p-4 flex", isCollapsed ? "justify-center" : "justify-between items-center")}>
+                    {!isCollapsed && (
+                        <span className="label-ui text-muted-foreground">Theme</span>
                     )}
+                    <ThemeSwitch />
                 </div>
-                <div className={cn("p-3 border-t border-zinc-800")}>
+
+                <div className="border-t border-border">
+                    <div className={cn("p-4", isCollapsed && "p-3")}>
+                        {isCollapsed ? (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="w-full text-muted-foreground hover:text-foreground"
+                                onClick={handleLogout}
+                                title="Logout"
+                            >
+                                <LogOut className="h-4 w-4" />
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="ghost"
+                                className="w-full justify-start text-muted-foreground hover:text-foreground pl-3 normal-case tracking-normal"
+                                onClick={handleLogout}
+                            >
+                                <LogOut className="h-4 w-4 mr-3" />
+                                Logout
+                            </Button>
+                        )}
+                    </div>
+                </div>
+
+                <div className={cn("p-3 border-t border-border")}>
                     <Button
                         variant="ghost"
                         size="icon"
                         className={cn(
-                            "w-full text-zinc-400 hover:text-white hover:bg-zinc-800/50",
+                            "w-full text-muted-foreground hover:text-foreground",
                             isCollapsed && "p-0"
                         )}
                         onClick={() => setIsCollapsed(!isCollapsed)}

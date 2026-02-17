@@ -113,7 +113,7 @@ export function ContainersList({ services }: { services: ServiceData[] }) {
                     <CardTitle className="text-lg">{services.length} Container{services.length !== 1 ? 's' : ''}</CardTitle>
                     {selectionMode && (
                         <div className="flex items-center gap-2 animate-in fade-in duration-200">
-                            <span className="text-sm text-zinc-400">{selected.size} selected</span>
+                            <span className="text-sm text-muted-foreground">{selected.size} selected</span>
                             <Button size="sm" variant="outline" onClick={() => handleBulkAction('start')} disabled={bulkLoading}
                                 className="h-8 text-emerald-400 border-emerald-800 hover:bg-emerald-900/30">
                                 <Play className="w-3 h-3 mr-1" /> Start
@@ -127,7 +127,7 @@ export function ContainersList({ services }: { services: ServiceData[] }) {
                                 <Trash2 className="w-3 h-3 mr-1" /> Delete
                             </Button>
                             <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}
-                                className="h-8 text-zinc-400">
+                                className="h-8 text-muted-foreground">
                                 <XSquare className="w-3 h-3 mr-1" /> Clear
                             </Button>
                         </div>
@@ -135,53 +135,53 @@ export function ContainersList({ services }: { services: ServiceData[] }) {
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="rounded-md border border-zinc-800">
+                <div className="rounded-sm border border-border">
                     <table className="w-full text-sm">
-                        <thead className="bg-zinc-900 border-b border-zinc-800 text-zinc-400">
+                        <thead className="bg-accent border-b border-border">
                             <tr>
                                 <th className="p-3 w-10">
                                     <input
                                         type="checkbox"
                                         checked={selected.size === services.length && services.length > 0}
                                         onChange={toggleSelectAll}
-                                        className="rounded border-zinc-600 bg-zinc-800"
+                                        className="rounded-sm border-border bg-card"
                                     />
                                 </th>
-                                <th className="p-3 text-left font-medium">Name</th>
-                                <th className="p-3 text-left font-medium">Project</th>
-                                <th className="p-3 text-left font-medium">Image</th>
-                                <th className="p-3 text-left font-medium">Status</th>
-                                <th className="p-3 text-right font-medium">Actions</th>
+                                <th className="p-3 text-left label-ui">Name</th>
+                                <th className="p-3 text-left label-ui">Project</th>
+                                <th className="p-3 text-left label-ui">Image</th>
+                                <th className="p-3 text-left label-ui">Status</th>
+                                <th className="p-3 text-right label-ui">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {services.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="p-8 text-center text-zinc-500">No containers found</td>
+                                    <td colSpan={6} className="p-8 text-center text-muted-foreground">No containers found</td>
                                 </tr>
                             ) : (
                                 services.map((s) => {
                                     const isLoading = loading === s.id || bulkLoading
                                     return (
-                                        <tr key={s.id} className="border-b border-zinc-800/50 hover:bg-zinc-900/50 transition-colors">
+                                        <tr key={s.id} className="border-b border-border/50 hover:bg-accent/50 transition-colors">
                                             <td className="p-3">
                                                 <input
                                                     type="checkbox"
                                                     checked={selected.has(s.id)}
                                                     onChange={() => toggleSelect(s.id)}
-                                                    className="rounded border-zinc-600 bg-zinc-800"
+                                                    className="rounded-sm border-border bg-card"
                                                 />
                                             </td>
                                             <td className="p-3">
                                                 <div className="flex items-center gap-2">
                                                     <span className={`w-2 h-2 rounded-full ${getStatusDot(s.status)}`} />
-                                                    <span className="font-medium text-white">{s.name}</span>
+                                                    <span className="font-medium text-foreground">{s.name}</span>
                                                 </div>
                                             </td>
                                             <td className="p-3">
                                                 <Badge variant="secondary" className="text-xs">{s.project.name}</Badge>
                                             </td>
-                                            <td className="p-3 font-mono text-xs text-zinc-500 max-w-[200px] truncate">
+                                            <td className="p-3 font-mono text-xs text-muted-foreground max-w-[200px] truncate">
                                                 {s.imageName || s.sourceType}
                                             </td>
                                             <td className="p-3">
@@ -219,7 +219,7 @@ export function ContainersList({ services }: { services: ServiceData[] }) {
                                                         <Button variant="ghost" size="icon" className="h-7 w-7"
                                                             disabled={selectionMode}
                                                             title="Manage">
-                                                            <Settings className="w-3.5 h-3.5 text-zinc-400" />
+                                                            <Settings className="w-3.5 h-3.5 text-muted-foreground" />
                                                         </Button>
                                                     </Link>
                                                 </div>
@@ -249,19 +249,19 @@ export function ContainersList({ services }: { services: ServiceData[] }) {
 function getStatusDot(status: string) {
     switch (status) {
         case 'RUNNING': return 'bg-emerald-500'
-        case 'STOPPED': return 'bg-zinc-500'
+        case 'STOPPED': return 'bg-muted-foreground'
         case 'ERROR': return 'bg-red-500'
         case 'BUILDING': return 'bg-blue-500'
-        default: return 'bg-zinc-500'
+        default: return 'bg-muted-foreground'
     }
 }
 
 function getStatusColor(status: string) {
     switch (status) {
         case 'RUNNING': return 'text-emerald-500'
-        case 'STOPPED': return 'text-zinc-500'
+        case 'STOPPED': return 'text-muted-foreground'
         case 'ERROR': return 'text-red-500'
         case 'BUILDING': return 'text-blue-500'
-        default: return 'text-zinc-500'
+        default: return 'text-muted-foreground'
     }
 }

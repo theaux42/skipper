@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-    const sessionCookie = request.cookies.get('better-auth.session_token') || request.cookies.get('session_token');
+    const sessionCookie = request.cookies.get('better-auth.session_token')
+        || request.cookies.get('__Secure-better-auth.session_token')
+        || request.cookies.get('session_token');
 
     // console.log("Middleware Path:", request.nextUrl.pathname);
     // console.log("Session Cookie:", sessionCookie ? "Present" : "Missing");

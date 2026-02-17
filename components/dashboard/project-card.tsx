@@ -18,6 +18,7 @@ interface ProjectData {
     name: string
     description: string | null
     updatedAt: string
+    services: { status: string }[]
     _count: { services: number }
 }
 
@@ -72,93 +73,125 @@ export function ProjectCard({ project, selected, onSelect }: {
     }
 
     return (
-        <Card className={`h-full transition-colors border-zinc-800 relative group
-            ${selected ? 'ring-2 ring-blue-500 bg-blue-950/10' : 'hover:bg-zinc-900/50'}`}>
-            {/* Checkbox */}
-            <div className="absolute top-3 left-3 z-10">
+        <Card className={`group relative overflow-hidden transition-all duration-200 ${selected ? 'ring-1 ring-bronze' : 'hover:shadow-sm'}`}>
+            <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity">
                 <input
                     type="checkbox"
                     checked={selected}
                     onChange={() => onSelect(project.id)}
-                    className="rounded border-zinc-600 bg-zinc-800 cursor-pointer"
+                    className="rounded-sm border-border bg-background cursor-pointer w-4 h-4"
+                    onClick={e => e.stopPropagation()}
                 />
             </div>
 
-            {/* Menu */}
             <div className="absolute top-3 right-3 z-10">
-                <div className="relative">
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-zinc-500 hover:text-white"
-                        onClick={(e) => { e.preventDefault(); setMenuOpen(!menuOpen) }}>
-                        <MoreVertical className="w-4 h-4" />
-                    </Button>
-                    {menuOpen && (
-                        <>
-                            <div className="fixed inset-0 z-30" onClick={() => setMenuOpen(false)} />
-                            <div className="absolute right-0 top-8 z-40 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl py-1 w-44 animate-in fade-in zoom-in-95 duration-100">
-                                <button className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800 flex items-center gap-2"
-                                    onClick={(e) => { e.preventDefault(); setRenaming(true); setMenuOpen(false) }}>
-                                    <Pencil className="w-3.5 h-3.5" /> Rename
-                                </button>
-                                <button className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800 flex items-center gap-2"
-                                    onClick={(e) => { e.preventDefault(); handleToggle('start') }} disabled={loading}>
-                                    <Play className="w-3.5 h-3.5 text-emerald-500" /> Start All
-                                </button>
-                                <button className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800 flex items-center gap-2"
-                                    onClick={(e) => { e.preventDefault(); handleToggle('stop') }} disabled={loading}>
-                                    <Square className="w-3.5 h-3.5 text-amber-500" /> Stop All
-                                </button>
-                                <div className="border-t border-zinc-800 my-1" />
-                                <button className="w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-zinc-800 flex items-center gap-2"
-                                    onClick={(e) => { e.preventDefault(); setDeleteDialogOpen(true); setMenuOpen(false) }} disabled={loading}>
-                                    <Trash2 className="w-3.5 h-3.5" /> Delete
-                                </button>
-                            </div>
-                        </>
-                    )}
-                </div>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={e => { e.preventDefault(); setMenuOpen(!menuOpen) }}
+                >
+                    <MoreVertical className="w-3.5 h-3.5" />
+                </Button>
+
+                {menuOpen && (
+                    <>
+                        <div className="fixed inset-0 z-20" onClick={() => setMenuOpen(false)} />
+                        <div className="absolute right-0 top-7 z-30 bg-card border border-border rounded-sm py-1 min-w-[140px] shadow-lg">
+                            <button
+                                className="w-full px-3 py-1.5 text-left text-xs hover:bg-accent flex items-center gap-2"
+                                onClick={e => { e.preventDefault(); setRenaming(true); setMenuOpen(false) }}
+                            >
+                                <Pencil className="w-3 h-3" /> Rename
+                            </button>
+                            <button
+                                className="w-full px-3 py-1.5 text-left text-xs hover:bg-accent flex items-center gap-2"
+                                onClick={e => { e.preventDefault(); handleToggle('start') }}
+                                disabled={loading}
+                            >
+                                <Play className="w-3 h-3 text-emerald-500" /> Start All
+                            </button>
+                            <button
+                                className="w-full px-3 py-1.5 text-left text-xs hover:bg-accent flex items-center gap-2"
+                                onClick={e => { e.preventDefault(); handleToggle('stop') }}
+                                disabled={loading}
+                            >
+                                <Square className="w-3 h-3 text-amber-500" /> Stop All
+                            </button>
+                            <div className="h-px bg-border my-1" />
+                            <button
+                                className="w-full px-3 py-1.5 text-left text-xs text-red-500 hover:bg-accent flex items-center gap-2"
+                                onClick={e => { e.preventDefault(); setDeleteDialogOpen(true); setMenuOpen(false) }}
+                                disabled={loading}
+                            >
+                                <Trash2 className="w-3 h-3" /> Delete
+                            </button>
+                        </div>
+                    </>
+                )}
             </div>
 
             <Link href={`/projects/${project.id}`} className={renaming ? 'pointer-events-none' : ''}>
-                <CardHeader className="pt-10">
-                    <div className="flex justify-between items-start">
-                        <div className="space-y-1 flex-1">
-                            {renaming ? (
-                                <div className="flex gap-2" onClick={e => e.preventDefault()}>
-                                    <Input
-                                        value={newName}
-                                        onChange={e => setNewName(e.target.value)}
-                                        className="h-8 bg-zinc-900 border-zinc-700 text-sm"
-                                        autoFocus
-                                        onKeyDown={e => { if (e.key === 'Enter') handleRename(); if (e.key === 'Escape') setRenaming(false) }}
-                                    />
-                                    <Button size="icon" className="h-8 w-8" onClick={handleRename} disabled={loading}>
-                                        {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                                    </Button>
-                                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setRenaming(false)}>
-                                        <X className="w-3 h-3" />
-                                    </Button>
-                                </div>
-                            ) : (
-                                <CardTitle className="text-xl">{project.name}</CardTitle>
-                            )}
-                            <CardDescription className="line-clamp-2">
-                                {project.description || "No description provided."}
-                            </CardDescription>
+                <div className="p-5">
+                    {renaming ? (
+                        <div className="flex gap-2 mb-3" onClick={e => { e.preventDefault(); e.stopPropagation() }}>
+                            <Input
+                                value={newName}
+                                onChange={e => setNewName(e.target.value)}
+                                className="h-7 text-sm"
+                                autoFocus
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter') handleRename()
+                                    if (e.key === 'Escape') setRenaming(false)
+                                }}
+                            />
+                            <Button size="icon" className="h-7 w-7" onClick={handleRename} disabled={loading}>
+                                {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setRenaming(false)}>
+                                <X className="w-3 h-3" />
+                            </Button>
                         </div>
-                        <div className="p-2 bg-primary/10 rounded-full text-primary ml-4">
-                            <Layout className="h-4 w-4" />
+                    ) : (
+                        <>
+                            <h3 className="font-serif text-base mb-1.5 pr-8">{project.name}</h3>
+                            <p className="text-xs text-muted-foreground line-clamp-2 mb-4 leading-relaxed">
+                                {project.description || "No description"}
+                            </p>
+                        </>
+                    )}
+
+                    <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-3">
+                            {(() => {
+                                const runningCount = project.services.filter(s => s.status === 'RUNNING').length
+                                const stoppedCount = project.services.filter(s => ['STOPPED', 'ERROR'].includes(s.status)).length
+                                return (
+                                    <>
+                                        {runningCount > 0 && (
+                                            <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-500">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                                <span>{runningCount}</span>
+                                            </div>
+                                        )}
+                                        {stoppedCount > 0 && (
+                                            <div className="flex items-center gap-1.5 text-red-600 dark:text-red-500">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                                                <span>{stoppedCount}</span>
+                                            </div>
+                                        )}
+                                        {project._count.services === 0 && (
+                                            <span className="text-muted-foreground">0 services</span>
+                                        )}
+                                    </>
+                                )
+                            })()}
                         </div>
+                        <time className="text-muted-foreground/60" suppressHydrationWarning>
+                            {new Date(project.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </time>
                     </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                        <span className="flex h-2 w-2 rounded-full bg-emerald-500 mr-2" />
-                        {project._count.services} Active Services
-                    </div>
-                </CardContent>
-                <CardFooter className="text-xs text-zinc-500 border-t border-zinc-900/50 pt-4 mt-auto">
-                    Last updated <span suppressHydrationWarning>{new Date(project.updatedAt).toLocaleDateString()}</span>
-                </CardFooter>
+                </div>
             </Link>
 
             <DeleteConfirmationDialog

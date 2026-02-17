@@ -17,6 +17,7 @@ interface ProjectData {
     name: string
     description: string | null
     updatedAt: string
+    services: { status: string }[]
     _count: { services: number }
 }
 
@@ -68,8 +69,8 @@ export function ProjectGrid({ projects }: { projects: ProjectData[] }) {
         <>
             {/* Bulk toolbar */}
             {selected.size > 0 && (
-                <div className="flex items-center gap-3 mb-4 p-3 bg-zinc-900/80 rounded-lg border border-zinc-800 animate-in slide-in-from-top duration-200">
-                    <span className="text-sm text-zinc-400">{selected.size} selected</span>
+                <div className="flex items-center gap-3 mb-4 p-3 bg-accent rounded-sm border border-border animate-in slide-in-from-top duration-200">
+                    <span className="text-sm text-muted-foreground">{selected.size} selected</span>
                     <div className="flex gap-2 ml-auto">
                         <Button size="sm" variant="outline" onClick={() => handleBulkToggle('start')} disabled={bulkLoading}
                             className="h-8 text-emerald-400 border-emerald-800 hover:bg-emerald-900/30">
@@ -84,7 +85,7 @@ export function ProjectGrid({ projects }: { projects: ProjectData[] }) {
                             <Trash2 className="w-3 h-3 mr-1" /> Delete
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}
-                            className="h-8 text-zinc-400">
+                            className="h-8 text-muted-foreground">
                             Clear
                         </Button>
                     </div>
@@ -104,7 +105,7 @@ export function ProjectGrid({ projects }: { projects: ProjectData[] }) {
                 {projects.length === 0 && (
                     <Card className="col-span-full border-dashed border-2 bg-transparent">
                         <CardContent className="flex flex-col items-center justify-center py-20 text-muted-foreground space-y-4">
-                            <div className="p-4 bg-muted rounded-full">
+                            <div className="p-4 bg-muted rounded-sm">
                                 <Layout className="h-8 w-8" />
                             </div>
                             <p>No projects found. Create one to get started.</p>
